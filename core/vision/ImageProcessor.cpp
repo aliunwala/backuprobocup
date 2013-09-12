@@ -98,6 +98,15 @@ void ImageProcessor::setCalibration(RobotCalibration calibration){
 void ImageProcessor::processFrame(){
   updateTransform();
   classifier_->classifyImage(color_table_);
+  if(camera_ == Camera::TOP)
+  {
+    ball_detector_->detectBall(true);
+    goal_detector_->detectGoal();
+  }
+  else if(camera_ == Camera::BOTTOM)
+  {
+    ball_detector_->detectBall(false);
+  }
 }
 
 void ImageProcessor::SetColorTable(unsigned char* table) {

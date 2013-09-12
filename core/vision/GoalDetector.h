@@ -14,6 +14,8 @@ class GoalDetector : public ObjectDetector {
   void init(TextLogger* tl){textlogger = tl;};
   FieldLine** yellowPosts; // Goals
   int YellowPostCounter;
+  void findGoal(int& imageX, int& imageY, float& percentageScreen, bool& found);
+  void detectGoal() ;
  private:
   TextLogger* textlogger;
   Classifier* classifier_;

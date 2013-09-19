@@ -8,4 +8,5 @@ set(SRCS ${INTERFACE_DIR}/shared_vision/main.cpp)
 
 qi_create_bin(vision ${SRCS})
 qi_use_lib(vision core opencv2_core opencv2_highgui)
-target_link_libraries(vision ${LINK_LIBS} ${LIBLUA} ${LIBYAML-CPP} ${LIBPYTHONSWIG})
+target_link_libraries(vision ${LINK_LIBS} ${LIBLUA} ${LIBYAML-CPP} ${LIBPYTHONSWIG} ${LIBBLOBS})
+add_dependencies(vision ${LIBBLOBS})

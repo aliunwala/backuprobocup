@@ -22,6 +22,7 @@ YAML="$BUILD_PATH/yaml-cpp/libyaml-cpp.a"
 BHWALK="$BUILD_PATH/core/bhwalk/libbhwalk.a"
 NAOQI_ROOT="$NAO_HOME/naoqi/crosstoolchain/atom/sysroot"
 LIBUTIL="$NAOQI_ROOT/usr/lib/libutil.a"
+LIBBLOBS="$NAO_HOME/build/libblobs.a"
 CORE_PATH="$NAO_HOME/core"
 CORE_SRCS=`find $CORE_PATH -name "*.cpp" | grep -v bhwalk`
 CORE_SRCS=${CORE_SRCS//$'\n'/ \\$'\n'  }
@@ -70,6 +71,7 @@ qmake-qt4 -project -o UTNaoTool.pro -nopwd \
   "INCLUDEPATH+=../../lib/lua/src" \
   "$CONFIG_DEBUG" \
   "DEPENDPATH+=$CORE_PATH" \
+  "DEPENDPATH+=$LIBBLOBS" \
   "$ADDITIONAL_INCLUDEPATH" \
   "MOC_DIR=./build/moc" \
   "OBJECTS_DIR=./build/obj" \
@@ -99,6 +101,7 @@ qmake-qt4 -project -o UTNaoTool.pro -nopwd \
   "LIBS+=$LIBUTIL" \
   "LIBS+=$YAML" \
   "LIBS+=$BHWALK" \
+  "LIBS+=$LIBBLOBS" \
   "SOURCES += $CORE_SRCS" \
   "SOURCES += $ALGLIB_SRCS" \
   "SOURCES += $LUA_SWIG_SRCS" \

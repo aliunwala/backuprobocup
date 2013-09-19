@@ -91,6 +91,8 @@ public:
   void setInt(int *arr, int ind, int val);
   unsigned char getUchar(unsigned char *arr,int ind);
   void setUchar(unsigned char *arr, int ind, unsigned char val);
+  Pose3D getPose3D(Pose3D* arr, int ind);
+  void setPose3D(Pose3D* arr, int ind, Pose3D val);
 
   PythonInterp *python_interp_;
   bool python_ok_;

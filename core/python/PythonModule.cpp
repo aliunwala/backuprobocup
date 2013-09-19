@@ -202,3 +202,11 @@ unsigned char PythonModule::getUchar(unsigned char *arr, int ind) {
 void PythonModule::setUchar(unsigned char *arr, int ind, unsigned char val) {
   arr[ind] = val;
 }
+
+Pose3D PythonModule::getPose3D(Pose3D* arr, int ind) {
+  return arr[ind];
+}
+
+void PythonModule::setPose3D(Pose3D* arr, int ind, Pose3D val) {
+  arr[ind] = val;
+}

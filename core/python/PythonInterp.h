@@ -1,6 +1,7 @@
 #ifndef _PYTHON_INTERP_H
 #define _PYTHON_INTERP_H
 
+#include <stdio.h>
 #include <string>
 #include <stdlib.h>
 #include <pthread.h>

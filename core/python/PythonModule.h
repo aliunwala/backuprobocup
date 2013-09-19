@@ -42,13 +42,12 @@ public:
   void specifyMemoryBlocks();
   void initSpecificModule();
   void processFrame();
-  void behaviorProcessFrame();
   void initPython();
-  void doStrategyCalculations();
   void call(const std::string &cmd);
 
   void updateModuleMemory(Memory *memory);
 
+  bool checkPython();
   void startPython();
   void triggerRestart(bool trigger) {python_restart_requested_ = trigger;};
   bool isOk() {return python_ok_; };
@@ -93,10 +92,8 @@ public:
   unsigned char getUchar(unsigned char *arr,int ind);
   void setUchar(unsigned char *arr, int ind, unsigned char val);
 
-private:
   PythonInterp *python_interp_;
   bool python_ok_;
-public:
   bool python_restart_requested_;
 };
 

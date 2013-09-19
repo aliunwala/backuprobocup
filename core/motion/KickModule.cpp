@@ -295,19 +295,13 @@ void KickModule::calcSwingSplinePts() {
   getSwingTargets(align,kick);
 
   double time = 0;  //default
-  /*if (kick_module_->swing_leg_ == Kick::RIGHT) {
+  if (kick_module_->swing_leg_ == Kick::RIGHT) {
     time = -0.0698*kick_module_->desired_kick_distance_ + 399.4; // tuned on Alison
   } else {
     time = -0.0685*kick_module_->desired_kick_distance_ + 382.5;
   }
-  time = crop(time,240,310);*/
-  if (kick_module_->desired_kick_distance_ == 2400 && kick_module_->swing_leg_ == Kick::RIGHT) {
-    time = 310;
-  } else if (kick_module_->desired_kick_distance_ == 2400 && kick_module_->swing_leg_ == Kick::LEFT) {
-    time = 300;
-  } else {
-    time = 240;
-  }
+  printf("desired: %2.f\n", kick_module_->desired_kick_distance_);
+  time = crop(time,200,400);
   std::cout << "time: " << time << std::endl; 
   //cout<<"Time for kick"<<time<<endl;
   

@@ -53,3 +53,8 @@ def setHeadPan(target_pos, target_time, isChange = None):
   setHeadTilt()
   
   core.joint_commands.setHeadPan(target_pos, target_time*1000.0, isChange)
+
+def setKickParameters(params, paramsSuper):
+  core.kick_params.send_params_ = True
+  core.kick_params.params_ = params
+  core.kick_params.params_super_ = paramsSuper

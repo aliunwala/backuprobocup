@@ -98,28 +98,31 @@ void PythonModule::specifyMemoryBlocks() {
   getOrAddMemoryBlock(image_,"raw_image");
 }
 
+void PythonModule::initSpecificModule() {
+  startPython(); 
+}
+
 void PythonModule::updateModuleMemory(Memory *memory) {
   memory_ = memory;
   specifyMemoryBlocks();
 
   // if python is broken, don't run
-  if (!python_ok_)
-    return;
-  try {
-    python_interp_->call("initMemory()");
-  }
-  catch (int e) {
-    std::cerr << "Python crash with exception on call of initMemory  - Upload new python!" << e << std::endl << std::flush;
-    python_ok_ = false;
-  }
+  if (!checkPython()) return;
+  python_interp_->call("initMemory()");
 }
 
-void PythonModule::initSpecificModule() {
-  startPython(); 
+bool PythonModule::checkPython() {
+  if(!python_ok_) {
+    if(python_interp_) {
+      delete python_interp_;
+      python_interp_ = NULL;
+    }
+    return false;
+  }
+  return true;
 }
 
 void PythonModule::processFrame() {
-
   // restart python if requested
   if (python_restart_requested_) {
     python_interp_->finalize();
@@ -127,83 +130,17 @@ void PythonModule::processFrame() {
     startPython();
   }
   
-  // if python is broken, don't run
-  if (!python_ok_) {
-    usleep(1/30.0 * 1000000); // don't run too fast
-    return;
-  }
-  // try to run process frame
-  try {
-    python_interp_->call("processFrame()");
-  }
-  catch (int e) {
-    std::cerr << "Python crash with exception  - Upload new python!" << e << std::endl << std::flush;
-    python_ok_ = false;
-  }
+  call("processFrame()");
 }
-
 
 void PythonModule::initPython(){
-  
-  // if python is broken, don't run
-  if (!python_ok_)
-    return;
-  
-  // try to run behavior process frame
-  try {
-    python_interp_->call("init()");
-  }
-  catch (int e) {
-    std::cerr << "Python crash with exception  - Upload new python!" << e << std::endl << std::flush;
-    python_ok_ = false;
-  }
+  if(!checkPython()) return;
+  python_interp_->call("init()");
 }
-
 
 void PythonModule::call(const std::string &cmd) {
-  // if python is broken, don't run
-  if (!python_ok_)
-    return;
-
-  try {
-    python_interp_->call(cmd.c_str());
-  }
-  catch (int e) {
-    std::cerr << "Python crash with exception  - Upload new python!" << e << std::endl << std::flush;
-    python_ok_ = false;
-  }
-}
-
-void PythonModule::doStrategyCalculations(){
-  // if python is broken, don't run
-  if (!python_ok_)
-    return;
-
-  // try to run behavior process frame
-  try {
-    python_interp_->call("strategy.initKickRegion()");
-    python_interp_->call("strategy.setKickAngles()");
-  }
-  catch (int e) {
-    std::cerr << "Python crash with exception  - Upload new python!" << e << std::endl << std::flush;
-    python_ok_ = false;
-  }
-}
-
-void PythonModule::behaviorProcessFrame() {
- 
-  // if python is broken, don't run
-  if (!python_ok_)
-    return;
-
-  // try to run behavior process frame
-  try {
-    python_interp_->call("behavior.processFrame()");
-  }
-  catch (int e) {
-    std::cerr << "Python crash with exception  - Upload new python!" << e << std::endl << std::flush;
-    python_ok_ = false;
-  }
+  if(!checkPython()) return;
+  python_interp_->call(cmd.c_str());
 }
 
 void PythonModule::startPython() {
@@ -221,16 +158,8 @@ void PythonModule::startPython() {
       std::cout << "From config file, read robot id: " << robot_state_->robot_id_ << ", GC team: " << game_state_->gameContTeamNum << ", wo_self: " << robot_state_->WO_SELF << std::endl;
     }
   }
-  if(python_interp_ == NULL) {
-    try{
-      python_interp_ = new PythonInterp();
-    }
-    catch (int e){
-      std::cerr << "Python crashed with exception - Upload new python!" << std::endl << std::flush;
-      python_ok_ = false;
-      python_interp_ = NULL;
-    }
-  }
+  python_ok_ = true;
+  if(python_interp_ == NULL) python_interp_ = new PythonInterp();
   python_restart_requested_ = false;
 }
 

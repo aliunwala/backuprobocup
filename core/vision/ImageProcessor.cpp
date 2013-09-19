@@ -101,11 +101,12 @@ void ImageProcessor::processFrame(){
   if(camera_ == Camera::TOP)
   {
     ball_detector_->detectBall(true);
-    goal_detector_->detectGoal();
+    goal_detector_->detectGoal(true);
   }
   else if(camera_ == Camera::BOTTOM)
   {
     ball_detector_->detectBall(false);
+    goal_detector_->detectGoal(false);
   }
 }
 

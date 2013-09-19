@@ -13,7 +13,7 @@ class BallDetector : public ObjectDetector {
   void init(TextLogger* tl){textlogger = tl;};
   BallCandidate candidates[MAX_BALL_CANDS];
   int candidateCount;
-  void findBall(int& imageX, int& imageY , bool& found);
+  void findBall(int& imageX, int& imageY ,int& isBallGoal, bool& found);
   void detectBall(bool topCamera) ;
 
  private:

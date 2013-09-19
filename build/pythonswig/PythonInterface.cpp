@@ -27,9 +27,12 @@ void PythonInterface::Init() {
 
   Py_Initialize();
   PyRun_SimpleString(
-   "from init import *\n"
-   "init()\n"
- );
+    "import pythonswig_module\n"
+    "pythonswig_module.PythonInterface().CORE_INSTANCE.python_.python_ok_ = False\n"
+    "from init import *\n"
+    "init()\n"
+    "pythonswig_module.PythonInterface().CORE_INSTANCE.python_.python_ok_ = True\n"
+  );
 }
 
 void PythonInterface::Import(string module) {

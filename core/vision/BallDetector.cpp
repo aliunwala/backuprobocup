@@ -17,9 +17,9 @@ BallDetector::BallDetector(DETECTOR_DECLARE_ARGS, Classifier*& classifier, BlobD
   {
     return;
   }*/
-  int imageX, imageY;
+  int imageX, imageY, isBallGoal;
   bool foundBall;
-  findBall(imageX, imageY, foundBall); // function defined elsewhere that fills in imageX, imageY by reference
+  findBall(imageX, imageY, isBallGoal, foundBall); // function defined elsewhere that fills in imageX, imageY by reference
   WorldObject* ball = &vblocks_.world_object->objects_[WO_BALL];
   if(!foundBall && ball->seen)
   {
@@ -38,12 +38,13 @@ BallDetector::BallDetector(DETECTOR_DECLARE_ARGS, Classifier*& classifier, BlobD
     ball->visionDistance = cmatrix_.groundDistance(p);
   }
 
+  ball->ballBlobIndex = isBallGoal;
   ball->fromTopCamera = topCamera;
   ball->seen = foundBall;
 }
 
 
-void BallDetector::findBall(int& imageX, int& imageY , bool& found) {
+void BallDetector::findBall(int& imageX, int& imageY , int& isBallGoal, bool& found) {
   /*int sectionWidth = 55; //5
   int sectionHeight = 3; //5
 
@@ -117,9 +118,100 @@ void BallDetector::findBall(int& imageX, int& imageY , bool& found) {
   int bigEndY = -1;
   int startY = -1;
 
+
+
+  int upThresh = 3000;
+  int leftThresh = 20;
+  int rightThresh = 20;
+
+  int upTotal = 0;
+  int leftTotal = 0;
+  int rightTotal = 0;
+  
+  int upTotalPoss = 0;
+  int leftTotalPoss = 0;
+  int rightTotalPoss = 0;
+
+  isBallGoal = 0;
+
   for (int y = 0; y < iparams_.height; y++) {
     int leftEmptyPixels = 0;
     for(int x = 0; x < iparams_.width; x++) {
+      //get total of blue pixels to left and right
+      if (getSegPixelValueAt(x,y) ==c_ORANGE)
+      {
+        for(int yd=y-1; yd >= 0 && yd >= y-upThresh; yd--)
+        {
+          if(getSegPixelValueAt(x, yd) == c_BLUE)
+          {
+            upTotal++;
+            upTotalPoss++;
+            yd = -1;
+          }
+          else if(getSegPixelValueAt(x, yd)==c_ORANGE)
+          {
+            yd = -1;
+          }
+          else if(getSegPixelValueAt(x, yd)!=c_UNDEFINED && getSegPixelValueAt(x, yd)!=c_FIELD_GREEN)
+          {
+            upTotalPoss++;
+            yd = -1;
+          }
+        }
+        for(int xl=x-1; xl >= 0 && xl>= x-leftThresh ; xl--)
+        {
+          if(getSegPixelValueAt(xl, y) == c_BLUE)
+          {
+            leftTotal++;
+            leftTotalPoss++;
+            xl = -1;
+          }
+          else if(getSegPixelValueAt(xl, y)==c_ORANGE)
+          {
+            xl = -1;
+          }
+          else if(getSegPixelValueAt(xl, y)!=c_UNDEFINED  && getSegPixelValueAt(xl, y)!=c_FIELD_GREEN)
+          {
+            leftTotalPoss++;
+            xl = -1;
+          }
+        }
+
+        for(int xr=x+1; xr < iparams_.width && xr<= x+rightThresh ; xr++)
+        {
+          if(getSegPixelValueAt(xr, y) == c_BLUE)
+          {
+            rightTotal++;
+            rightTotalPoss++;
+            xr = iparams_.width;
+          }
+          else if(getSegPixelValueAt(xr, y)==c_ORANGE)
+          {
+            xr = iparams_.width;
+          }
+          else if(getSegPixelValueAt(xr, y)!=c_UNDEFINED && getSegPixelValueAt(xr, y)!=c_FIELD_GREEN)
+          {
+            rightTotalPoss++;
+            xr = iparams_.width;
+          }
+        }
+        /*if(x-leftrightBlueThresh>=0)
+        {
+          if(getSegPixelValueAt(x-leftrightBlueThresh,y)==c_BLUE)
+          {
+            leftTotal++;
+          }
+        }
+        if(x+leftrightBlueThresh<iparams_.width)
+        {
+          if(getSegPixelValueAt(x+leftrightBlueThresh,y)==c_BLUE)
+          {
+            rightTotal++;
+          }
+        }*/
+      }
+
+      //detect ball
       if (getSegPixelValueAt(x,y) == c_ORANGE) // if the pixel is orange
       {
         leftEmptyPixels = maxAllowedEmptyPixels;
@@ -205,10 +297,25 @@ void BallDetector::findBall(int& imageX, int& imageY , bool& found) {
     bigBeginY = topY;
     bigEndY = bottomY;
 
-    int thresholdArea = 30;
+    if(upTotalPoss ==0) { upTotalPoss = 1;}
+    if(leftTotalPoss ==0) { leftTotalPoss = 1;}
+    if(rightTotalPoss ==0) { rightTotalPoss = 1;}
+    float upPercentage = (float)upTotal/(float)upTotalPoss;
+    float leftPercentage = (float)leftTotal/(float)leftTotalPoss;
+    float rightPercentage = (float)rightTotal/(float)rightTotalPoss;
+    if(upPercentage >=0.4) //&& ((leftPercentage >=0.00 && rightPercentage >=0.00) || (leftPercentage ==0.0 && rightPercentage==0.0)))
+    {
+      isBallGoal = 1;
+    }
+    else
+    {
+      isBallGoal = 0;
+    }
 
+    int thresholdArea = 20;
     if((bigEndX-bigBeginX)*(bigEndY-bigBeginY) >= thresholdArea)
     {
+      //printf("UP: (%d / %d) = %.2f    LEFT: (%d / %d) = %.2f     RIGHT: (%d / %d) = %.2f\n", upTotal, upTotalPoss, upPercentage, leftTotal, leftTotalPoss, leftPercentage, rightTotal, rightTotalPoss, rightPercentage);
       found = true;
       imageX = bigBeginX + (bigEndX-bigBeginX)/2;
       imageY = bigBeginY + (bigEndY-bigBeginY)/2;

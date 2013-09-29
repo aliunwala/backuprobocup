@@ -35,6 +35,32 @@ void GoalDetector::detectGoal(bool topCamera) {
 
 
 void GoalDetector::findGoal(int& imageX, int& imageY, bool& found) {
+
+  blob_detector_->formBlobs(c_BLUE);
+  BlobCollection blobs = blob_detector_->horizontalBlob[c_BLUE];
+  int largestBlob = 0;
+  if(blobs.size() > 0) {
+    //printf("found %i blobs\n", blobs.size());
+    for(int i = 0; i < blobs.size(); i++) {
+      Blob& b = blobs[i];
+      //printf("blob %i is centered at %i, %i, in bounding box (%i,%i) to (%i,%i)\n", i, b.avgX, b.avgY, b.xi, b.yi, b.xf, b.yf);
+      int currSize = (b.xf-b.xi)*(b.yf-b.yi);
+      if(currSize > largestBlob)
+      {
+        imageX = b.avgX;
+        imageY = b.avgY;
+        found = true;
+        largestBlob = currSize;
+      }
+    }
+  }
+  else
+  {
+    found = false;
+  }
+
+
+
   // int sectionWidth = 9;
   // int sectionHeight = 3;
 
@@ -100,120 +126,120 @@ void GoalDetector::findGoal(int& imageX, int& imageY, bool& found) {
   //   found = false;
   // }
 
-  int beginingX = 0;
-  int endX = 0;
-  int maxAllowedEmptyPixels = 15;
-  bool inShape = false;
-  int biggestX = 0;
-  int bigBeginX = -1;
-  int bigEndX = -1;
-  int bigBeginY = -1;
-  int bigEndY = -1;
-  int startY = -1;
+  // int beginingX = 0;
+  // int endX = 0;
+  // int maxAllowedEmptyPixels = 15;
+  // bool inShape = false;
+  // int biggestX = 0;
+  // int bigBeginX = -1;
+  // int bigEndX = -1;
+  // int bigBeginY = -1;
+  // int bigEndY = -1;
+  // int startY = -1;
 
-  for (int y = 0; y < iparams_.height; y++) {
-    int leftEmptyPixels = 0;
-    for(int x = 0; x < iparams_.width; x++) {
-      if (getSegPixelValueAt(x,y) == c_BLUE) // if the pixel is orange
-      {
-        leftEmptyPixels = maxAllowedEmptyPixels;
-        //or could just add one to the leftEmptyPixels as long as it isn't over the max allowed
-        if(inShape)
-        {
-          endX = x;
-        }
-        else
-        {
-          inShape = true;
-          beginingX = x;
-          endX = x;
-        }
-      }
-      else
-      {
-        if(inShape)
-        {
-          leftEmptyPixels--;
-          if(leftEmptyPixels <= 0)
-          {
-            inShape = false;
-            if(endX-beginingX >= bigEndX-bigBeginX)
-            {
-              //From center, see how tall the object is, if the area is bigger than the last object, get this one
-              if((endX-beginingX) >= (bigEndX-bigBeginX))
-              {
-                bigBeginX = beginingX;
-                bigEndX = endX;
-                startY = y;
-              }
+  // for (int y = 0; y < iparams_.height; y++) {
+  //   int leftEmptyPixels = 0;
+  //   for(int x = 0; x < iparams_.width; x++) {
+  //     if (getSegPixelValueAt(x,y) == c_BLUE) // if the pixel is orange
+  //     {
+  //       leftEmptyPixels = maxAllowedEmptyPixels;
+  //       //or could just add one to the leftEmptyPixels as long as it isn't over the max allowed
+  //       if(inShape)
+  //       {
+  //         endX = x;
+  //       }
+  //       else
+  //       {
+  //         inShape = true;
+  //         beginingX = x;
+  //         endX = x;
+  //       }
+  //     }
+  //     else
+  //     {
+  //       if(inShape)
+  //       {
+  //         leftEmptyPixels--;
+  //         if(leftEmptyPixels <= 0)
+  //         {
+  //           inShape = false;
+  //           if(endX-beginingX >= bigEndX-bigBeginX)
+  //           {
+  //             //From center, see how tall the object is, if the area is bigger than the last object, get this one
+  //             if((endX-beginingX) >= (bigEndX-bigBeginX))
+  //             {
+  //               bigBeginX = beginingX;
+  //               bigEndX = endX;
+  //               startY = y;
+  //             }
               
-            }
-          }
-        }
-      }
-    }
-  }
+  //           }
+  //         }
+  //       }
+  //     }
+  //   }
+  // }
   
-  if(bigBeginX>=0 && bigEndX>=0)
-  {
-    int topY = startY-1;
-    int bottomY = startY+1;
-    int centerX = bigBeginX + (bigEndX-bigBeginX)/2;
-    int yLeftEmptyPixels = maxAllowedEmptyPixels;
+  // if(bigBeginX>=0 && bigEndX>=0)
+  // {
+  //   int topY = startY-1;
+  //   int bottomY = startY+1;
+  //   int centerX = bigBeginX + (bigEndX-bigBeginX)/2;
+  //   int yLeftEmptyPixels = maxAllowedEmptyPixels;
 
-    for(int ydown=startY+1; ydown <iparams_.height; ydown++)
-    {
-        if (getSegPixelValueAt(centerX,ydown) == c_BLUE) // if the pixel is blue
-        {
-          yLeftEmptyPixels = maxAllowedEmptyPixels;
-          bottomY = ydown;
-        }
-        else
-        {
-            yLeftEmptyPixels--;
-            if(yLeftEmptyPixels <= 0)
-            {
-              break;
-            }
-        }
-    }
+  //   for(int ydown=startY+1; ydown <iparams_.height; ydown++)
+  //   {
+  //       if (getSegPixelValueAt(centerX,ydown) == c_BLUE) // if the pixel is blue
+  //       {
+  //         yLeftEmptyPixels = maxAllowedEmptyPixels;
+  //         bottomY = ydown;
+  //       }
+  //       else
+  //       {
+  //           yLeftEmptyPixels--;
+  //           if(yLeftEmptyPixels <= 0)
+  //           {
+  //             break;
+  //           }
+  //       }
+  //   }
 
-    yLeftEmptyPixels = maxAllowedEmptyPixels;
-    for(int yup=startY-1; yup >=0; yup--)
-    {
-        if (getSegPixelValueAt(centerX,yup) == c_BLUE) // if the pixel is blue
-        {
-          yLeftEmptyPixels = maxAllowedEmptyPixels;
-          topY = yup;
-        }
-        else
-        {
-            yLeftEmptyPixels--;
-            if(yLeftEmptyPixels <= 0)
-            {
-              break;
-            }
-        }
-    }
+  //   yLeftEmptyPixels = maxAllowedEmptyPixels;
+  //   for(int yup=startY-1; yup >=0; yup--)
+  //   {
+  //       if (getSegPixelValueAt(centerX,yup) == c_BLUE) // if the pixel is blue
+  //       {
+  //         yLeftEmptyPixels = maxAllowedEmptyPixels;
+  //         topY = yup;
+  //       }
+  //       else
+  //       {
+  //           yLeftEmptyPixels--;
+  //           if(yLeftEmptyPixels <= 0)
+  //           {
+  //             break;
+  //           }
+  //       }
+  //   }
 
-    bigBeginY = topY;
-    bigEndY = bottomY;
+  //   bigBeginY = topY;
+  //   bigEndY = bottomY;
 
-    int thresholdArea = 1000;
-    if((bigEndX-bigBeginX)*(bigEndY-bigBeginY) >= thresholdArea)
-    {
-      found = true;
-      imageX = bigBeginX + (bigEndX-bigBeginX)/2;
-      imageY = bigBeginY + (bigEndY-bigBeginY)/2;
-    }
-    else
-    {
-      found = false;
-    }
-  }
-  else
-  {
-    found = false;
-  }
+  //   int thresholdArea = 1000;
+  //   if((bigEndX-bigBeginX)*(bigEndY-bigBeginY) >= thresholdArea)
+  //   {
+  //     found = true;
+  //     imageX = bigBeginX + (bigEndX-bigBeginX)/2;
+  //     imageY = bigBeginY + (bigEndY-bigBeginY)/2;
+  //   }
+  //   else
+  //   {
+  //     found = false;
+  //   }
+  // }
+  // else
+  // {
+  //   found = false;
+  // }
 
 }

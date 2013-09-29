@@ -7,6 +7,8 @@ import math
 import commands, cfgstiff
 import testFSM
 import percepts
+#from numpy import matrix
+#from numpy import linalg
 
 
 def areDistinct(state1, state2):
@@ -32,7 +34,14 @@ def inDuration(beginTime, endTime, self):
   else:
     return False
 
+
 Penalised = Initial = Finished = pose.Sit
+
+# class KalmanFilter:
+#   dt = 1.0/30.0
+#   A = matrix([[1,2,3],[1,2,3]])
+#   B = matrix([[1,2,3],[1,2,3]])
+#   C = matrix([[1,2,3],[1,2,3]])
 
 class Ready(HeadBodyTask):
   def __init__(self):
@@ -64,9 +73,20 @@ class Playing(Task):
 
     if inDuration(0.0, 2.0, self):
       commands.setStiffness()
-      commands.stand()
+      #commands.stand()
       commands.setHeadTilt(-21)
-      #self.headIsDown = True
+    elif inDuration(2.0, -1.0, self):
+      if(ball.seen):
+        if(ball.fieldLineIndex == 1):
+          core.speech.say('RIGHT')
+        elif(ball.fieldLineIndex == -1):
+          core.speech.say('LEFT')
+        pass
+        #core.speech.say('YES')
+        #print('BALL CENTER:' + str(ball.imageCenterX) + ', ' + str(ball.imageCenterY) + '\n')
+      else:
+        pass
+        #core.speech.say('NO')
     elif inDuration(self.kickStart, self.kickStart+2.0, self):
       if canKick:
         core.speech.say('KICK')

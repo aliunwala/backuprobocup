@@ -14,6 +14,8 @@ class LineDetector : public ObjectDetector {
   void init(TextLogger* tl){textlogger = tl;};
   FieldLine** fieldLines;
   int FieldLinesCounter;
+  void findLine(int& imageX, int& imageY, bool& found);
+  void detectLine(bool topCamera) ;
  private:
   TextLogger* textlogger;
   Classifier* classifier_;

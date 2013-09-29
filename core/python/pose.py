@@ -68,3 +68,41 @@ class Stand(Task):
     core.walk_request.stand()
     if self.getTime() > 2.0:
       self.finish()
+
+class Squat(Task):
+  def __init__(self, time = 3.0):
+    Task.__init__(self)
+    self.chain = [ 
+      skills.PoseSequence(
+        cfgpose.goalieSquatPart1, 0.4,
+        cfgpose.goalieSquatPart2, 0.2,
+        cfgpose.goalieSquatPart2, time,
+        cfgpose.goalieSquat5, 0.2,
+        cfgpose.goalieSquat5, 0.3,
+        cfgpose.goalieSquatPart2, 0.3,
+        cfgpose.goalieSquatGetup15, 0.4,
+        cfgpose.goalieSquatGetup2, 0.6,
+        cfgpose.goalieSquatGetup7, 0.3
+      ),
+      Stand()
+    ]
+
+class BlockRight(Task):
+  def __init__(self, time = 3.0):
+    Task.__init__(self)
+    self.subtask = skills.PoseSequence(
+      cfgpose.blockright, 1.0,
+      cfgpose.blockright, time, 
+      cfgpose.sittingPoseNoArms, 2.0,
+      cfgpose.standingPose, 2.0
+    )
+
+class BlockLeft(Task):
+  def __init__(self, time = 3.0):
+    Task.__init__(self)
+    self.subtask = skills.PoseSequence(
+      cfgpose.blockleft, 1.0,
+      cfgpose.blockleft, time, 
+      cfgpose.sittingPoseNoArms, 2.0,
+      cfgpose.standingPose, 2.0
+    )

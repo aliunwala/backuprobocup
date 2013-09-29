@@ -74,6 +74,7 @@ void VisionWindow::updateBigImage() {
       drawBallCands(bigImage);
       drawDetectedRobots(bigImage);
       drawPenaltyCross(bigImage);
+      drawBeacons(bigImage);
     }
   }
 
@@ -93,6 +94,7 @@ void VisionWindow::redrawImages(ImageWidget* rawImage, ImageWidget* segImage, Im
   drawYellowGoal(objImage);
   drawBall(objImage);
   drawDetectedRobots(objImage);
+  drawBeacons(objImage);
 
   if(horizonCheck->isChecked()) {
     drawHorizonLine(rawImage);
@@ -109,6 +111,7 @@ void VisionWindow::redrawImages(ImageWidget* rawImage, ImageWidget* segImage, Im
     drawBallCands(rawImage);
     drawDetectedRobots(rawImage);
     drawPenaltyCross(rawImage);
+    drawBeacons(rawImage);
 
     drawLines(segImage);
     drawYellowGoal(segImage);
@@ -116,6 +119,7 @@ void VisionWindow::redrawImages(ImageWidget* rawImage, ImageWidget* segImage, Im
     drawBallCands(segImage);
     drawDetectedRobots(segImage);
     drawPenaltyCross(segImage);
+    drawBeacons(segImage);
   }
 
   horizontalBlobImage->fill(0);
@@ -660,8 +664,7 @@ void VisionWindow::drawHorzLinePoints(ImageWidget *image) {
   }
 
   // Draw orange ball blobs
-  pen = QPen(segCol[c_ORANGE], 2);
-  painter.setPen(pen);
+  painter.setPen(QPen(QColor(0, 255, 127), 3));
   for (uint16_t i = 0; i < processor->blob_detector_->horizontalBlob[c_ORANGE].size(); i++) {
     Blob *bl = &processor->blob_detector_->horizontalBlob[c_ORANGE][i];
     painter.drawRect(bl->xi, bl->yi, bl->dx, bl->dy);
@@ -764,4 +767,39 @@ void VisionWindow::drawWorldObject(ImageWidget* image, QColor color, int worldOb
 
     painter.drawLine(x1, y1, x2, y2);
   }
+}
+
+void VisionWindow::drawBeacons(ImageWidget* image) {
+  QColor pink(0xFF, 0x5C, 0xCD);
+  for(int i = WO_FIRST_BEACON; i <= WO_LAST_BEACON; i++) {
+    WorldObject* beacon = &world_object_block_->objects_[i];
+    QColor t, b;
+    switch(i) {
+      case WO_BEACON_PINK_YELLOW: t = pink, b = Qt::yellow; break;
+      case WO_BEACON_YELLOW_PINK: t = Qt::yellow, b = pink; break;
+      case WO_BEACON_BLUE_YELLOW: t = Qt::blue, b = Qt::yellow; break;
+      case WO_BEACON_YELLOW_BLUE: t = Qt::yellow, b = Qt::blue; break;
+      case WO_BEACON_PINK_BLUE: t = pink, b = Qt::blue; break;
+      case WO_BEACON_BLUE_PINK: t = Qt::blue, b = pink; break;
+    }
+    if(beacon->seen && beacon->fromTopCamera == (_widgetAssignments[image] == IMAGE_TOP)) {
+      drawBeacon(image, t, b, beacon->width, beacon->height, beacon->imageCenterX, beacon->imageCenterY);
+    }
+  }
+}
+
+void VisionWindow::drawBeacon(ImageWidget* image, QColor topColor, QColor bottomColor, float width, float height, int centerX, int centerY) {
+  QPainter painter(image->getImage());
+  QPen wpen = QPen(topColor, 3);
+  painter.setPen(wpen);
+  painter.drawLine(centerX - width / 2, centerY, centerX + width / 2, centerY);
+  painter.drawLine(centerX + width / 2, centerY, centerX + width / 4, centerY - height / 2);
+  painter.drawLine(centerX + width / 4, centerY - height / 2, centerX - width / 4, centerY - height / 2);
+  painter.drawLine(centerX - width / 4, centerY - height / 2, centerX - width / 2, centerY);
+  
+  wpen = QPen(bottomColor, 3);
+  painter.setPen(wpen);
+  painter.drawLine(centerX + width / 2, centerY, centerX + width / 4, centerY + height / 2);
+  painter.drawLine(centerX + width / 4, centerY + height / 2, centerX - width / 4, centerY + height / 2);
+  painter.drawLine(centerX - width / 4, centerY + height / 2, centerX - width / 2, centerY);
 }

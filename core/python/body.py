@@ -12,8 +12,9 @@ class ToPose(Task):
 
   def run(self):
     for i in range(2, core.NUM_JOINTS):
-      val = core.DEG_T_RAD * util.getPoseJoint(i, self.pose)
-      core.joint_commands.setJointCommand(i, val)
+      val = util.getPoseJoint(i, self.pose)
+      if val != None:
+        core.joint_commands.setJointCommand(i, val * core.DEG_T_RAD)
 
     core.joint_commands.send_body_angles_ = True
     core.joint_commands.body_angle_time = self.time * 1000.0

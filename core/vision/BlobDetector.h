@@ -20,6 +20,7 @@ class BlobDetector : public ObjectDetector {
   std::vector<BlobCollection> horizontalBlob, verticalBlob;
   void formWhiteLineBlobs();
   void formBlobs(Color color);
+  BlobCollection mergeBlobs(BlobCollection& blobs, int thresholdX, int thresholdY);
 
  private:
   Classifier*& classifier_;

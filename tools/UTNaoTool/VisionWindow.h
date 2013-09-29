@@ -123,6 +123,8 @@ public:
   void drawVertLinePoints(ImageWidget *image);
   void drawHorzLinePoints(ImageWidget *image);
   void drawDetectedRobots(ImageWidget *image);
+  void drawBeacons(ImageWidget *image);
+  void drawBeacon(ImageWidget *image, QColor topColor, QColor bottomColor, float width, float height, int centerX, int centerY);
   void drawWorldObject(ImageWidget* image, QColor color, int worldObjectID);
 
   void drawHorizonLine(ImageWidget* image);

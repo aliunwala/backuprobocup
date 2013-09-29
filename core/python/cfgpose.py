@@ -805,6 +805,23 @@ def setRobotSpecificSittingPose():
     UTdebug.log(0,'*** No Robot specific sitting pose')
   UTdebug.log(0,'Done setting robot specific sitting pos')
 
+sittingPoseNoArms = dict()
+
+sittingPoseNoArms[core.HeadYaw] = 0.0;
+sittingPoseNoArms[core.HeadPitch] = -1.0 * 10.0;
+sittingPoseNoArms[core.LHipYawPitch] = -5;
+sittingPoseNoArms[core.LHipPitch] = -46.5;
+sittingPoseNoArms[core.LHipRoll] = -1.0 * 0;
+sittingPoseNoArms[core.LKneePitch] = 125; # lkneepitch 120; #110; #120;
+sittingPoseNoArms[core.LAnklePitch] = -70;
+sittingPoseNoArms[core.LAnkleRoll] = -1.0 * 0;
+sittingPoseNoArms[core.RHipYawPitch] = -5;
+sittingPoseNoArms[core.RHipPitch] = -46.5;
+sittingPoseNoArms[core.RHipRoll] = 0;
+sittingPoseNoArms[core.RKneePitch] = 125; # rkneepitch 120; #110; #120;
+sittingPoseNoArms[core.RAnklePitch] = -70;
+sittingPoseNoArms[core.RAnkleRoll] = 0;
+
 
 standingPose = dict()
 
@@ -1825,3 +1842,58 @@ standHigh[core.RShoulderPitch] = -116
 standHigh[core.RShoulderRoll] = 8
 standHigh[core.RElbowYaw] = 25
 standHigh[core.RElbowRoll] = -53
+
+
+blockright = dict()
+blockright[core.HeadYaw] = 0
+blockright[core.HeadPitch] = 0
+blockright[core.LHipYawPitch] = 0
+blockright[core.LHipRoll] = 20
+blockright[core.LHipPitch] = -32
+blockright[core.LKneePitch] = 76
+blockright[core.LAnklePitch] = -40
+blockright[core.LAnkleRoll] = 17
+
+blockright[core.RHipYawPitch] = 0
+blockright[core.RHipRoll] = -34
+blockright[core.RHipPitch] = -49
+blockright[core.RKneePitch] = 125
+blockright[core.RAnklePitch] = -70
+blockright[core.RAnkleRoll] = -5
+
+blockright[core.LShoulderPitch] = -97
+blockright[core.LShoulderRoll]= 7
+blockright[core.LElbowYaw] = -12
+blockright[core.LElbowRoll] = -1
+
+blockright[core.RShoulderPitch] = -91
+blockright[core.RShoulderRoll]= 27
+blockright[core.RElbowYaw] = -119
+blockright[core.RElbowRoll] = -4
+
+blockleft = dict()
+blockleft[core.HeadYaw] = 0
+blockleft[core.HeadPitch] = 0
+blockleft[core.RHipYawPitch] = 0
+blockleft[core.RHipRoll] = 20
+blockleft[core.RHipPitch] = -32
+blockleft[core.RKneePitch] = 76
+blockleft[core.RAnklePitch] = -40
+blockleft[core.RAnkleRoll] = 17
+
+blockleft[core.LHipYawPitch] = 0
+blockleft[core.LHipRoll] = -34
+blockleft[core.LHipPitch] = -49
+blockleft[core.LKneePitch] = 125
+blockleft[core.LAnklePitch] = -70
+blockleft[core.LAnkleRoll] = -5
+
+blockleft[core.RShoulderPitch] = -97
+blockleft[core.RShoulderRoll]= 7
+blockleft[core.RElbowYaw] = -12
+blockleft[core.RElbowRoll] = -1
+
+blockleft[core.LShoulderPitch] = -91
+blockleft[core.LShoulderRoll]= 27
+blockleft[core.LElbowYaw] = -119
+blockleft[core.LElbowRoll] = -4

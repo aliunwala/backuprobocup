@@ -105,6 +105,13 @@ ENUM(WorldObjectType,   // Types of objects
   WO_OWN_LEFT_GOALBAR,
   WO_OWN_RIGHT_GOALBAR,
 
+  WO_BEACON_PINK_YELLOW,
+  WO_BEACON_YELLOW_PINK,
+  WO_BEACON_BLUE_YELLOW,
+  WO_BEACON_YELLOW_BLUE,
+  WO_BEACON_PINK_BLUE,
+  WO_BEACON_BLUE_PINK,
+
   // penalty crosses
   WO_UNKNOWN_PENALTY_CROSS,
   WO_OWN_PENALTY_CROSS,
@@ -119,6 +126,8 @@ ENUM(WorldObjectType,   // Types of objects
 );
 
 
+const int WO_FIRST_BEACON = WO_BEACON_PINK_YELLOW;
+const int WO_LAST_BEACON = WO_BEACON_BLUE_PINK;
 const int WO_OPPONENT_FIRST=WO_OPPONENT1;
 const int WO_OPPONENT_LAST=WO_OPPONENT5;
 
@@ -242,6 +251,8 @@ public:
   int imageCenterX;
   int imageCenterY;
   float radius;
+  float width;
+  float height;
   int fieldLineIndex;
   int ballBlobIndex;
 

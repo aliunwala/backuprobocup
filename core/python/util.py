@@ -14,6 +14,7 @@ def currentFrame():
   return core.vision_frame_info.frame_id
 
 def getPoseJoint(joint, pose, reversed = False, reverseRolls = False):
+  if joint not in pose: return None
   if not reversed: return pose[joint]
 
   if joint == core.LHipYawPitch or joint == core.RHipYawPitch:

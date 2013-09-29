@@ -60,7 +60,6 @@ class Playing(Task):
   rotateCounter = 0
   kickStart = -1
 
-#Playing = kicks.Kick
 
   def run(self):
     ball = core.world_objects.getObjPtr(core.WO_BALL)
@@ -229,7 +228,6 @@ class Playing(Task):
           commands.setWalkVelocity(0.0, 0.0, 0.2)
           self.sampleSum = 0
           self.errorSamples = []
-
 
 
 class Testing(Task):

@@ -32,7 +32,7 @@ class Classifier {
   void constructRuns(int colorFlags = ~0);
   bool didHighResBallScan;
 
-
+  void setHorizon(HorizonLine);
   void setStepScale(int,int);
   void getStepSize(int&,int&);
   void getStepScale(int&,int&);

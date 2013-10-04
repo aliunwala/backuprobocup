@@ -56,5 +56,3 @@ add_subdirectory(${BHWALK_DIR} ${CMAKE_CURRENT_BINARY_DIR}/bhwalk)
 
 qi_create_lib(core STATIC ${SRCS})
 qi_stage_lib(core)
-target_link_libraries(core ${LIBBLOBS})
-add_dependencies(core ${LIBBLOBS})

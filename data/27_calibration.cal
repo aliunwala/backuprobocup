@@ -13,9 +13,9 @@ p1: 0.0142147
 p2: -0.00413894
 HeadYaw: 0
 HeadPitch: 0
-LHipYawPitch: -0
-LHipRoll: -0.0314159
-LHipPitch: -0.0645772
+LHipYawPitch: -0.0244346
+LHipRoll: -0.0174533
+LHipPitch: -0.0541052
 LKneePitch: 0
 LAnklePitch: 0
 LAnkleRoll: 0
@@ -84,7 +84,7 @@ rollOffsetToBottomCamera: 0
 yawOffsetToBottomCamera: 0
 tiltOffsetToTopCamera: -0.015708
 rollOffsetToTopCamera: -0.0296706
-yawOffsetToTopCamera: 0
+yawOffsetToTopCamera: -0.0191986
 headTiltFactorBottomCamera: 0
 headTiltFactorTopCamera: -0.0122173
 headRollFactorBottomCamera: 0

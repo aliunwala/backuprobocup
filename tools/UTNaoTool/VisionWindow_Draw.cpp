@@ -789,6 +789,8 @@ void VisionWindow::drawBeacons(ImageWidget* image) {
 }
 
 void VisionWindow::drawBeacon(ImageWidget* image, QColor topColor, QColor bottomColor, float width, float height, int centerX, int centerY) {
+  width += 4; // Make these slightly bigger so that they're visible around the beacons
+  height += 4;
   QPainter painter(image->getImage());
   QPen wpen = QPen(topColor, 3);
   painter.setPen(wpen);

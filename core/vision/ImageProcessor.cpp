@@ -105,7 +105,6 @@ void ImageProcessor::processFrame(){
   {
     ball_detector_->detectBall(true);
     goal_detector_->detectGoal(true);
-    line_detector_->detectLine(true);
   }
   else if(camera_ == Camera::BOTTOM)
   {

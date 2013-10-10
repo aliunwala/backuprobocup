@@ -20,14 +20,11 @@ LineDetector::LineDetector(DETECTOR_DECLARE_ARGS, Classifier*& classifier, BlobD
 
 
 void LineDetector::detectLine(bool topCamera) {
+  if(topCamera){ return; }
   int imageX, imageY;
-  bool foundLine;
+  bool foundLine = false;
   findLine(imageX, imageY, foundLine); // function defined elsewhere that fills in imageX, imageY by reference
   WorldObject* line = &vblocks_.world_object->objects_[WO_OPP_GOAL_LINE];
-  if(!foundLine && line->seen)
-  {
-    return;
-  }
   if(foundLine)
   {
     line->imageCenterX = imageX;
@@ -45,30 +42,71 @@ void LineDetector::detectLine(bool topCamera) {
 
 
 void LineDetector::findLine(int& imageX, int& imageY , bool& found) {
+  int lowestWhite = 0;
+  imageX = 0;
+  imageY = 0;
+  int allowedBlank = 5;
+  int seenBlank = 0;
+  int totalMiddleToUse = 15;
+  int totalBlankMiddle = 0;
+  int runningMiddleAverage = 0;
+  int begRange = (iparams_.width/2.0)-7;
+  int endRange = (iparams_.width/2.0)+7;
+  int whiteColumns = 0;
 
-
-  blob_detector_->formBlobs(c_WHITE);
-  BlobCollection blobs = blob_detector_->horizontalBlob[c_WHITE];
-  int largestBlob = 0;
-  if(blobs.size() > 0) {
-    //printf("found %i blobs\n", blobs.size());
-    for(int i = 0; i < blobs.size(); i++) {
-      Blob& b = blobs[i];
-      //printf("blob %i is centered at %i, %i, in bounding box (%i,%i) to (%i,%i) with area %i \n", i, b.avgX, b.avgY, b.xi, b.yi, b.xf, b.yf, (b.xf-b.xi)*(b.yf-b.yi));
-      int currSize = (b.xf-b.xi)*(b.yf-b.yi);
-      if(currSize > largestBlob)
+    int leftEmptyPixels = 0;
+    for(int x = 0; x < iparams_.width; x++) {
+      bool seenGreen = false;
+      for(int y=iparams_.height-1; y >= -1; y--)
       {
-        imageX = b.avgX;
-        imageY = b.avgY;
-        found = true;
-        largestBlob = currSize;
+        if(y==-1)
+        {
+          if(x>=begRange && x<=endRange)
+          {
+            totalBlankMiddle++;
+          }
+          // seenBlank++;
+          // if(seenBlank > allowedBlank)
+          // {
+          //   found = false;
+          //   printf("NO WHITE LINE\n");
+          //   return;
+          // }
+        }
+        else if(getSegPixelValueAt(x, y) == c_FIELD_GREEN)
+        {
+          seenGreen = true;
+        }
+        else if((getSegPixelValueAt(x, y) == c_WHITE) && seenGreen)
+        {
+           whiteColumns++;
+           if(lowestWhite < y)
+           {
+             lowestWhite = y;
+           }
+           if(x>=begRange && x<=endRange)
+           {
+              runningMiddleAverage += y;
+           }
+          seenBlank = 0;
+          y = -2;
+        }
+        
       }
     }
 
-    //printf("LARGEST BLOB IS %i sq pixels, centered at (%i, %i)\n\n", largestBlob, imageX, imageY);
-  }
-  else
-  {
-    found = false;
-  }
+    int middleAverage = 0;
+    if((whiteColumns+0.0)/(iparams_.width+0.0) < 0.5)
+    {
+      // printf("PERCENTAGE: %f   \n", (whiteColumns+0.0)/(iparams_.width+0.0));
+      found = false;
+      return;
+    }
+    if((totalMiddleToUse-totalBlankMiddle)!=0)
+    {
+      middleAverage = (runningMiddleAverage)/(totalMiddleToUse-totalBlankMiddle);
+    }
+    //printf("AVG: %d  >  %f\n       and totalBlankMiddle = %d \n", middleAverage, iparams_.height*.8, totalBlankMiddle);
+    found = (middleAverage+0.0) > iparams_.height*.8;
+    // printf("%d > %f\n", lowestWhite, iparams_.height*.8);
 }

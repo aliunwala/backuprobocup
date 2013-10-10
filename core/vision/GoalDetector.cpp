@@ -7,7 +7,8 @@ GoalDetector::GoalDetector(DETECTOR_DECLARE_ARGS, Classifier*& classifier, BlobD
 void GoalDetector::detectGoal(bool topCamera) {
   int imageX, imageY;
   bool foundGoal;
-  findGoal(imageX, imageY, foundGoal); // function defined elsewhere that fills in imageX, imageY by reference
+  float percentageScreen;
+  findGoal(imageX, imageY, percentageScreen, foundGoal); // function defined elsewhere that fills in imageX, imageY by reference
   WorldObject* goal = &vblocks_.world_object->objects_[WO_OPP_GOAL];
 
   if(!foundGoal && goal->seen)
@@ -20,11 +21,14 @@ void GoalDetector::detectGoal(bool topCamera) {
   {
     goal->imageCenterX = imageX;
     goal->imageCenterY = imageY;
+    goal->radius = percentageScreen;
+    //printf("PERCENTAGE: %f\n", percentageScreen);
 
     Position p = cmatrix_.getWorldPosition(imageX, imageY);
     goal->visionBearing = cmatrix_.bearing(p);
     goal->visionElevation = cmatrix_.elevation(p);
     goal->visionDistance = cmatrix_.groundDistance(p);
+    //printf("VISION DISTANCE: %f\n", goal->visionDistance);
   }
 
   goal->fromTopCamera = topCamera;
@@ -34,18 +38,19 @@ void GoalDetector::detectGoal(bool topCamera) {
 }
 
 
-void GoalDetector::findGoal(int& imageX, int& imageY, bool& found) {
+void GoalDetector::findGoal(int& imageX, int& imageY, float& percentageScreen, bool& found) {
 
   blob_detector_->formBlobs(c_BLUE);
-  BlobCollection blobs = blob_detector_->horizontalBlob[c_BLUE];
+  BlobCollection& blobs = blob_detector_->horizontalBlob[c_BLUE];
+  BlobCollection merged = blob_detector_->mergeBlobs(blobs,20,30);
   int largestBlob = 0;
-  if(blobs.size() > 0) {
-    //printf("found %i blobs\n", blobs.size());
-    for(int i = 0; i < blobs.size(); i++) {
-      Blob& b = blobs[i];
-      //printf("blob %i is centered at %i, %i, in bounding box (%i,%i) to (%i,%i)\n", i, b.avgX, b.avgY, b.xi, b.yi, b.xf, b.yf);
+  if(merged.size() > 0) {
+    // printf("\n\nfound %i blobs\n", merged.size());
+    for(int i = 0; i < merged.size(); i++) {
+      Blob& b = merged[i];
+      // printf("blob %i is centered at %i, %i, in bounding box (%i,%i) to (%i,%i)\n", i, b.avgX, b.avgY, b.xi, b.yi, b.xf, b.yf);
       int currSize = (b.xf-b.xi)*(b.yf-b.yi);
-      if(currSize > largestBlob)
+      if(currSize > largestBlob && currSize > 100)
       {
         imageX = b.avgX;
         imageY = b.avgY;
@@ -58,9 +63,20 @@ void GoalDetector::findGoal(int& imageX, int& imageY, bool& found) {
   {
     found = false;
   }
-
-
-
+  if(found)
+  {
+    int totalBluePixels = 0;
+    for (int y = 0; y < iparams_.height; y++) {
+       for(int x = 0; x < iparams_.width; x++) {
+          if (getSegPixelValueAt(x,y) ==c_BLUE)
+          {
+            totalBluePixels++;
+          }
+       }
+     }
+     percentageScreen = (totalBluePixels + 0.0) / (iparams_.height*iparams_.width + 0.0);
+  }
+  
   // int sectionWidth = 9;
   // int sectionHeight = 3;
 

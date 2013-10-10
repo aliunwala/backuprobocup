@@ -74,8 +74,8 @@ class Squat(Task):
     Task.__init__(self)
     self.chain = [ 
       skills.PoseSequence(
-        cfgpose.goalieSquatPart1, 0.4,
-        cfgpose.goalieSquatPart2, 0.2,
+        cfgpose.goalieSquatPart1, 0.1,
+        cfgpose.goalieSquatPart2, 0.1,
         cfgpose.goalieSquatPart2, time,
         cfgpose.goalieSquat5, 0.2,
         cfgpose.goalieSquat5, 0.3,

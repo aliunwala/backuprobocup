@@ -1,8 +1,13 @@
 #include <common/RobotInfo.h>
 
 ImageParams::ImageParams(Camera::Type camera) {
-  width = 320;
-  height = 240;
+  if(camera == Camera::TOP) {
+    width = 640;
+    height = 480;
+  } else {
+    width = 320;
+    height = 240;
+  }
   defaultHorizontalStepScale = 0;
   defaultVerticalStepScale = 0;
 

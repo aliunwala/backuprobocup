@@ -20,7 +20,6 @@ set(NAOQI_LIB ${NAOQI_ROOT}/usr/lib)
 set(PYTHON_INCLUDE ${NAOQI_ROOT}/usr/include/python2.7)
 set(LIBYAML-CPP ${CMAKE_CURRENT_BINARY_DIR}/../yaml-cpp/libyaml-cpp.a)
 set(LIBPYTHONSWIG ${NAO_HOME}/build/pythonswig/lib_pythonswig_module.so -lutil)
-set(LIBBLOBS ${NAO_HOME}/build/libblobs.a)
 
 set(SWIG_LUA_CPP_DIR "${NAO_HOME}/build2/build/luaswig/cpp")
 set(SWIG_LUA_I_DIR "${NAO_HOME}/build2/build/luaswig/i")

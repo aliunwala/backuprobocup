@@ -21,46 +21,32 @@ class Classifier {
  public:
   Classifier(const VisionBlocks& vblocks, const VisionParams& vparams, const ImageParams& iparams, const Camera::Type& camera);
   ~Classifier();
-
   void init(TextLogger* tl){textlogger = tl;};
-
-  VisionPoint ***horizontalPoint, ***verticalPoint;
-  uint32_t **horizontalPointCount, **verticalPointCount;
-
   bool classifyImage(unsigned char*);
-
-  void constructRuns(int colorFlags = ~0);
-  bool didHighResBallScan;
-
-  void setHorizon(HorizonLine);
-  void setStepScale(int,int);
-  void getStepSize(int&,int&);
-  void getStepScale(int&,int&);
+  void classifyImage(const std::vector<FocusArea>& areas, unsigned char* colorTable);
+  void classifyImage(const FocusArea& area, unsigned char* colorTable);
   inline Color xy2color(int x, int y) {
     return (Color)segImg_[y * iparams_.width + x];
   }
+  VisionPoint ***horizontalPoint, ***verticalPoint;
+  uint32_t **horizontalPointCount, **verticalPointCount;
+  void setStepScale(int hscale, int vscale);
+  void getStepSize(int& hstep, int& vstep);
+  void getStepScale(int& hscale, int& vscale);
  private:
+  bool setImagePointers();
   const VisionBlocks& vblocks_;
   const VisionParams& vparams_;
   const ImageParams& iparams_;
   const Camera::Type& camera_;
   bool initialized_;
-  bool doingHighResScan_;
-  bool bodyExclusionAvailable;
   TextLogger* textlogger;
-
-  // For excluding parts of the shoulder in the body
-  float bodyExclusionSlope[NUM_BODY_EXCL_POINTS];
-  float bodyExclusionOffset[NUM_BODY_EXCL_POINTS];
 
   unsigned char* img_;
   unsigned char* segImg_, *segImgLocal_;
   uint16_t vstep_, hstep_, vscale_, hscale_;
   HorizonLine horizon_;
   unsigned char* colorTable_;
-  bool* pointScanned;
-  uint16_t* vGreenPosition;
-  uint16_t* hGreenPosition;
   bool fromLog_;
 };
 #endif

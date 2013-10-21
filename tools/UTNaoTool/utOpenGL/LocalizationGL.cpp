@@ -119,24 +119,22 @@ void LocalizationGL::drawObservationLine(Vector3<float> origin, Vector3<float> e
 
 
 
-void LocalizationGL::drawOdometry(Point2D loc, AngRad ori, OdometryBlock* odometry){
-
+void LocalizationGL::drawParticle(Point2D loc, AngRad ori, float alpha){
   glPushMatrix();
   basicGL.translate(loc,15);
   basicGL.rotateZ(ori);
   basicGL.setLineWidth(30);
-  basicGL.colorRGBAlpha(basicGL.blueRGB,1.0);
+  float minAlpha = 0.2f;
+  alpha = minAlpha + (1 - minAlpha) * alpha;
+  basicGL.colorRGBAlpha(basicGL.purpleRGB, alpha);
 
-  Vector2<float> start(0,0);
-  basicGL.drawLine(start,odometry->displacement.translation * 25);
-
-  // draw from translational odom, or from fwd?
-  AngRad heading = 0; //odometry->displacement.getDirection() *RAD_T_DEG;
-  // draw angular odom?
-  basicGL.drawArc(heading, heading+odometry->displacement.rotation*RAD_T_DEG*25, 200);
+  Vector2<float> start(0,0), end(40,0);
+  Vector2<float> arrowLeftStart(end.x * .9, end.x / 5), arrowRightStart(end.x * .9, - end.x / 5);
+  basicGL.drawLine(start,end);
+  basicGL.drawLine(arrowLeftStart, end);
+  basicGL.drawLine(arrowRightStart, end);
 
   glPopMatrix();
-
 }
 
 

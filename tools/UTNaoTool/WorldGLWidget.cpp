@@ -206,7 +206,14 @@ void WorldGLWidget::setMode(int mode) {
     displayOptions[SHOWFIELD]=true;
     displayOptions[SHOWROBOT]=true;
     displayOptions[SHOWBALL]=true;
-    displayOptions[SHOWLOCATIONTEXTOVERLAY]=true;
+    displayOptions[SHOWBEACONS]=true;
+    displayOptions[SHOWPARTICLES]=true;
+    displayOptions[SHOWOBSERVATIONS]=true;
+    //displayOptions[SHOWLOCATIONTEXTOVERLAY]=true;
+    //displayOptions[SHOWTEAMMATES]=true;
+    //displayOptions[SHOWFILTEREDOPPONENTS]=true;
+    //displayOptions[SHOWOPPONENTOVERLAY]=true;
+    //displayOptions[SHOWROLES]=false;//true;
     emit modeChanged("Simple Mode");
   } else if (mode==KFLOCALIZATIONMODE) {
     setAllDisplayOptions(true);
@@ -384,6 +391,9 @@ void WorldGLWidget::draw() {
   }
 
   if (displayOptions[SHOWFIELD]) drawField();
+  if (displayOptions[SHOWBEACONS]) drawBeacons();
+  if (displayOptions[SHOWPARTICLES]) drawParticles();
+  if (displayOptions[SHOWOBSERVATIONS]) drawObservations();
   overlayBasicInfoText();
 
   // draw robots, ball, objects
@@ -454,6 +464,53 @@ void WorldGLWidget::draw() {
   */
 }
 
+void WorldGLWidget::getBeaconColors(int i, RGB& tColor, RGB& bColor) {
+  switch(i) {
+    case WO_BEACON_BLUE_YELLOW: tColor = basicGL.blueRGB; bColor = basicGL.yellowRGB; break;
+    case WO_BEACON_YELLOW_PINK: tColor = basicGL.yellowRGB; bColor = basicGL.pinkRGB; break;
+    case WO_BEACON_PINK_BLUE: tColor = basicGL.pinkRGB; bColor = basicGL.blueRGB; break;
+    case WO_BEACON_YELLOW_BLUE: tColor = basicGL.yellowRGB; bColor = basicGL.blueRGB; break;
+    case WO_BEACON_BLUE_PINK: tColor = basicGL.blueRGB; bColor = basicGL.pinkRGB; break;
+    case WO_BEACON_PINK_YELLOW: tColor = basicGL.pinkRGB; bColor = basicGL.yellowRGB; break;
+  }
+}
+
+void WorldGLWidget::drawParticles() {
+  for(int i = 0; i < NUM_PARTICLES; i++) {
+    const Particle& p = localizationMem->particles[i];
+    localizationGL.drawParticle(p.loc, p.theta, p.prob);
+  }
+}
+
+void WorldGLWidget::drawBeacons() {
+  for(int i = WO_FIRST_BEACON; i <= WO_LAST_BEACON; i++) {
+    RGB t, b;
+    getBeaconColors(i, t, b);
+    Point2D loc = worldObjects->objects_[i].loc;
+    objectsGL.drawBeacon(loc, t, b);
+  }
+}
+
+void WorldGLWidget::drawObservations() {
+  glPushMatrix();
+  WorldObject *self = &(worldObjects->objects_[robotState->WO_SELF]);
+  basicGL.translate(self->loc);
+  basicGL.rotateZ(self->orientation);
+
+  for(int i = 0; i < NUM_WORLD_OBJS; i++) {
+    if(i < WO_FIRST_BEACON || i > WO_LAST_BEACON) continue;
+    WorldObject& object = worldObjects->objects_[i];
+    if(!object.seen) continue;
+    Vector3<float> 
+      start(0, 0, 50.0f), 
+      end(cosf(object.visionBearing) * object.visionDistance, sinf(object.visionBearing) * object.visionDistance, 50.0f);
+    RGB t, b; getBeaconColors(i, t, b);
+    objectsGL.drawBeacon(Point2D(end.x, end.y), t, b, 0.5f);
+    localizationGL.drawObservationLine(start, end, basicGL.whiteRGB);
+  }
+  glPopMatrix();
+}
+
 void WorldGLWidget::drawField() {
   if (worldObjects == NULL){
     cout << "No world Objects, can not draw field" << endl;
@@ -461,6 +518,7 @@ void WorldGLWidget::drawField() {
   }
 
   objectsGL.drawGreenCarpet();
+  return;
   for (int i = LINE_OFFSET; i < LINE_OFFSET + NUM_LINES; i++){
     WorldObject* wo = &(worldObjects->objects_[i]);
     objectsGL.drawFieldLine(wo->loc, wo->endLoc);
@@ -674,7 +732,7 @@ void WorldGLWidget::drawOdometry(){
 
   WorldObject* self = &(worldObjects->objects_[robotState->WO_SELF]);
 
-  localizationGL.drawOdometry(self->loc,self->orientation,odometry);
+  //localizationGL.drawOdometry(self->loc,self->orientation,odometry);
 
 }
 
@@ -703,74 +761,6 @@ void WorldGLWidget::drawTruthBall(){
 
 
 void WorldGLWidget::drawAlternateRobots() {
-  if (localizationMem == NULL){
-    // draw normal one since we can't draw multiple from kf mem
-    drawRobot();
-    drawBall();
-    return;
-  }
-
-  for (int i=0; i<MAX_MODELS_IN_MEM; i++) {
-    if (localizationMem->alpha[i]==-1000) continue;
-    Point2D p(localizationMem->X00[i]*10.0,localizationMem->X10[i]*10.0);
-    Point2D sd(localizationMem->P00[i]*10.0,localizationMem->P11[i]*10.0);
-    Point2D bp(localizationMem->X30[i]*10.0,localizationMem->X40[i]*10.0);
-    Point2D bsd(localizationMem->P33[i]*10.0,localizationMem->P44[i]*10.0);
-    Point2D bvel(localizationMem->X50[i]*10.0,localizationMem->X60[i]*10.0);
-    float alpha = localizationMem->alpha[i];
-    if (alpha < 0.05) alpha = 0.05;
-    basicGL.colorRGBAlpha(basicGL.whiteRGB,alpha);
-    // stick figure
-    float tilt = 0;
-    float roll = 0;
-    if (odometry != NULL && (odometry->getting_up_side_ != Getup::NONE || odometry->fall_direction_ != Fall::NONE)) {
-      if (odometry->getting_up_side_ == Getup::BACK){
-        tilt = -M_PI/2.0;
-      }
-      else if (odometry->getting_up_side_ == Getup::FRONT){
-        tilt = M_PI/2.0;
-      }
-      else {
-        if (odometry->fall_direction_ == Fall::LEFT){
-          roll = -M_PI/2.0;
-        }
-        else if (odometry->fall_direction_ == Fall::RIGHT){
-          roll = M_PI/2.0;
-        }
-        else if (odometry->fall_direction_ == Fall::BACKWARD){
-          tilt = -M_PI/2.0;
-        }
-        else {
-          tilt = M_PI/2.0;
-        }
-      }
-    }
-
-    robotGL.drawTiltedRobot(p, localizationMem->X20[i], tilt, roll);
-
-    // draw ball
-    objectsGL.drawBall(bp,alpha);
-    if (displayOptions[SHOWBALLVEL])
-      objectsGL.drawBallVel(bp, bvel, alpha);
-    if (displayOptions[SHOWBALLUNCERT]) {
-      basicGL.colorRGBAlpha(basicGL.orangeRGB,alpha);
-      localizationGL.drawUncertaintyEllipse(bp, bsd);
-    }
-
-    if (displayOptions[SHOWROBOTUNCERT]) {
-      basicGL.colorRGBAlpha(basicGL.blackRGB,alpha);
-      //      localizationGL.drawRotatedUncertaintyEllipse(p,localizationMem->P00[i]*10.0,localizationMem->P01[i]*10.0,localizationMem->P10[i]*10.0,localizationMem->P11[i]*10.0);
-      localizationGL.drawUncertaintyEllipse(p, sd);
-      localizationGL.drawUncertaintyAngle(p,localizationMem->X20[i],localizationMem->P22[i]);
-    }
-    // possibly draw role over robot
-    if (i == localizationMem->bestModel && displayOptions[SHOWROLES] && robotState != NULL){
-      QFont serifFont( "Courier", 12);
-      setFont(serifFont);
-      renderText(p.x/FACT, p.y/FACT, 400/FACT,
-                 QString(roleAbbrevs[robotState->role_].c_str()));
-    }
-  }
 }
 
 void WorldGLWidget::drawSeenOpponents(){
@@ -1546,34 +1536,6 @@ void WorldGLWidget::overlayOdometry() {
 }
 
 void WorldGLWidget::overlayAlternLocationText() {
-  QFont serifFont( "Courier", 7);
-  setFont(serifFont);
-  glColor3f(0.2,0.8,0.8);
-  int x=550;
-  renderText(x,10,"Models:");
-  glColor3f(1.0,1.0,1.0);
-  int y=20;
-
-  // say that we don't have this in memory rather than printing garbage
-  if (localizationMem == NULL){
-    renderText(x,y,"KF Mem not saved. No alternate models");
-    return;
-  }
-
-  for (int i=0; i<MAX_MODELS_IN_MEM; i++) {
-    if (localizationMem->alpha[i]==-1000) continue;
-    renderText(x,y,"id: "+QString::number(localizationMem->modelNumber[i])
-               + ", " + QString::number(localizationMem->alpha[i],'g',3)
-               + ", bot: (" + QString::number((int)localizationMem->X00[i]*10)
-               + "," + QString::number((int)localizationMem->X10[i]*10)
-               + "," + QString::number((int)(RAD_T_DEG*localizationMem->X20[i]))
-               + ", ball: (" + QString::number((int)localizationMem->X30[i]*10)
-               + "," + QString::number((int)localizationMem->X40[i]*10)
-               + ", bvel: (" + QString::number((int)localizationMem->X50[i]*10)
-               + "," + QString::number((int)localizationMem->X60[i]*10)
-               + ")");
-    y+=10;
-  }
 }
 
 

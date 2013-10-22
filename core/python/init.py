@@ -44,7 +44,7 @@ def processFrame():
     core.localizationC.processFrame()
     core.opponentsC.processFrame()
     behavior.processFrame()
-    lights.processFrame()
+    #lights.processFrame()
     core.instance.publishData()
   except:
     handle()

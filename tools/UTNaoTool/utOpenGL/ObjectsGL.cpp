@@ -129,4 +129,13 @@ void ObjectsGL::drawGoal(Point2D goalCenter) {
   drawCrossBar(goalCenter);
 }
 
-
+void ObjectsGL::drawBeacon(Point2D center, RGB tColor, RGB bColor, float alpha) {
+  glPushMatrix();
+  basicGL.translate(center);
+  basicGL.colorRGBAlpha(bColor, alpha);
+  basicGL.drawCylinder(50.0f, 100.0f);
+  basicGL.translate(Vector3<float>(0,0,100.0f));
+  basicGL.colorRGBAlpha(tColor, alpha);
+  basicGL.drawCylinder(50.0f, 100.0f);
+  glPopMatrix();
+}

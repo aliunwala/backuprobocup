@@ -117,6 +117,9 @@ class WorldGLWidget : public QGLViewer {
     SHOWALLPACKETS,
     SHOWALLPACKETSOVERLAY,
     SHOWTRUESIMLOCATION,
+    SHOWBEACONS,
+    SHOWPARTICLES,
+    SHOWOBSERVATIONS,
     NUM_DISPLAY_OPTIONS
   };
 
@@ -128,6 +131,10 @@ class WorldGLWidget : public QGLViewer {
   void updateMemory(Memory* memory);
 
   void drawField();
+  void drawObservations();
+  void drawBeacons();
+  void drawParticles();
+  void getBeaconColors(int i, RGB& tColor, RGB& bColor);
   void drawRobot();
   void drawBall();
   void drawAlternateRobots();

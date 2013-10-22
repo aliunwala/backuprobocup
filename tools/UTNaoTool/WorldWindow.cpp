@@ -14,7 +14,7 @@ WorldWindow::WorldWindow(QMainWindow* pa) : QWidget() {
   layout->addWidget(world, 0, 0,20,20);
 
   setLayout(layout);
-  float ratio = 1/7.5;
+  float ratio = 1.0;
   resize(FIELD_X * ratio,FIELD_Y * ratio);
   setWindowTitle(tr("World View"));
 

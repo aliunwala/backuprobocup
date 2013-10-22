@@ -17,7 +17,7 @@ BasicGL::BasicGL() {
   greenRGB = TORGB(0,255,0);
   pinkRGB = TORGB(255,20,147);
   grayRGB = TORGB(170,170,170);
-  purpleRGB = TORGB(255,0,255);
+  purpleRGB = TORGB(49, 0, 98);
 }  
 
 void BasicGL::drawLine(Point2D p1, Point2D p2) {

@@ -26,7 +26,7 @@ public:
   void drawObservationLine(Vector3<float> origin, Vector3<float> end, RGB color);
  
   // Particle filter specific drawing  
-  void drawOdometry(Point2D loc, AngRad ori, OdometryBlock* odometry);
+  void drawParticle(Point2D loc, AngRad ori, float alpha);
 
   BasicGL basicGL;
   ObjectsGL objectsGL;

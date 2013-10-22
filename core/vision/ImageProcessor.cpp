@@ -12,6 +12,7 @@ ImageProcessor::ImageProcessor(VisionBlocks& vblocks, const ImageParams& iparams
   ball_detector_ = new BallDetector(DETECTOR_PASS_ARGS, classifier_, blob_detector_);
   robot_detector_ = new RobotDetector(DETECTOR_PASS_ARGS, classifier_, blob_detector_);
   cross_detector_ = new CrossDetector(DETECTOR_PASS_ARGS, classifier_, blob_detector_);
+  beacon_detector_ = new BeaconDetector(DETECTOR_PASS_ARGS, classifier_, blob_detector_);
 }
 
 void ImageProcessor::init(TextLogger* tl){
@@ -19,6 +20,7 @@ void ImageProcessor::init(TextLogger* tl){
   vparams_.init();
   classifier_->init(tl);
   blob_detector_->init(tl);
+  beacon_detector_->init(tl);
   line_detector_->init(tl);
   goal_detector_->init(tl);
   ball_detector_->init(tl);
@@ -98,20 +100,29 @@ void ImageProcessor::setCalibration(RobotCalibration calibration){
 void ImageProcessor::processFrame(){
   updateTransform();
   classifier_->classifyImage(color_table_);
-  classifier_->constructRuns();
+  //classifier_->constructRuns();
+  blob_detector_->constructRuns();
+  //blob_detector_->formBlobs(3);
   /* ... */
+
+  // blob_detector_->formBlobs(c_PINK);
+  // blob_detector_->formBlobs(c_YELLOW);
+  // blob_detector_->formBlobs(c_BLUE);
 
   if(camera_ == Camera::TOP)
   {
-    ball_detector_->detectBall(true);
-    goal_detector_->detectGoal(true);
+    beacon_detector_->detectBeacon(true);
+    // ball_detector_->detectBall(true);
+    //goal_detector_->detectGoal(true);
   }
   else if(camera_ == Camera::BOTTOM)
   {
-    ball_detector_->detectBall(false);
-    goal_detector_->detectGoal(false);
-    line_detector_->detectLine(false);
+    beacon_detector_->detectBeacon(false);
+    // ball_detector_->detectBall(false);
+    // goal_detector_->detectGoal(false);
+    // line_detector_->detectLine(false);
   }
+  // printf("DONE WITH PROCESS FRAME\n");
 }
 
 void ImageProcessor::SetColorTable(unsigned char* table) {
@@ -124,6 +135,47 @@ std::vector<BallCandidate*> ImageProcessor::getBallCandidates() {
 }
 
 BallCandidate* ImageProcessor::getBestBallCandidate() {
+
+  // BallCandidate bc;
+  // blob_detector_->formBlobs(c_ORANGE);
+  // BlobCollection blobs = blob_detector_->horizontalBlob[c_ORANGE];
+  // BlobCollection merged = blob_detector_->mergeBlobs(blobs,10,10, c_ORANGE);
+  // int largestBlob = 0;
+  // bool found = false;
+  // if(merged.size() > 0) {
+  //   // printf("found %i blobs\n", merged.size());
+  //   for(int i = 0; i < merged.size(); i++) {
+  //     Blob& b = merged[i];
+  //     // printf("blob %i is centered at %i, %i, W,H(%d,%d) in bounding box (%i,%i) to (%i,%i) with PCR(%f)\n", i, b.avgX, b.avgY, b.dx, b.dy, b.xi, b.yi, b.xf, b.yf, b.correctPixelRatio);
+  //     int currSize = (b.dx)*(b.dy);
+  //     double thresh = 0.50;
+  //     if(currSize > largestBlob && currSize > 50 && b.correctPixelRatio>0.40 && ((abs(b.dx-b.dy))<thresh*b.dy) && ((abs(b.dy-b.dx))<thresh*b.dx))
+  //     {
+  //       bc.centerX = b.avgX;
+  //       bc.centerY = b.avgY;
+  //       bc.width = b.dx;
+  //       bc.height = b.dy;
+  //       bc.radius = ((bc.width/2.0) + (bc.height/2.0))/2.0;
+  //       bc.blob = &merged[i];
+  //       found = true;
+  //       largestBlob = currSize;
+  //       // printf("FOUND BALL WITH WIDTH x HEIGHT: %d\n", currSize);
+  //     }
+  //   }
+  //   //printf("LARGEST BLOB CENTERED AT (%i, %i)\n\n", imageX, imageY);
+  //   if(found)
+  //   {
+  //     return &bc;
+  //   }
+  //   else
+  //   {
+  //     return NULL;
+  //   }
+  // }
+  // else
+  // {
+  //   return NULL;
+  // }
   return NULL;
 }
 

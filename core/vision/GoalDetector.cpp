@@ -2,6 +2,7 @@
 
 GoalDetector::GoalDetector(DETECTOR_DECLARE_ARGS, Classifier*& classifier, BlobDetector*& blob_detector, LineDetector*& line_detector) : 
   DETECTOR_INITIALIZE, classifier_(classifier), blob_detector_(blob_detector), line_detector_(line_detector) {
+    YellowPostCounter = 0;
 }
 
 void GoalDetector::detectGoal(bool topCamera) {
@@ -42,40 +43,40 @@ void GoalDetector::findGoal(int& imageX, int& imageY, float& percentageScreen, b
 
   blob_detector_->formBlobs(c_BLUE);
   BlobCollection& blobs = blob_detector_->horizontalBlob[c_BLUE];
-  BlobCollection merged = blob_detector_->mergeBlobs(blobs,20,30);
-  int largestBlob = 0;
-  if(merged.size() > 0) {
-    // printf("\n\nfound %i blobs\n", merged.size());
-    for(int i = 0; i < merged.size(); i++) {
-      Blob& b = merged[i];
-      // printf("blob %i is centered at %i, %i, in bounding box (%i,%i) to (%i,%i)\n", i, b.avgX, b.avgY, b.xi, b.yi, b.xf, b.yf);
-      int currSize = (b.xf-b.xi)*(b.yf-b.yi);
-      if(currSize > largestBlob && currSize > 100)
-      {
-        imageX = b.avgX;
-        imageY = b.avgY;
-        found = true;
-        largestBlob = currSize;
-      }
-    }
-  }
-  else
-  {
-    found = false;
-  }
-  if(found)
-  {
-    int totalBluePixels = 0;
-    for (int y = 0; y < iparams_.height; y++) {
-       for(int x = 0; x < iparams_.width; x++) {
-          if (getSegPixelValueAt(x,y) ==c_BLUE)
-          {
-            totalBluePixels++;
-          }
-       }
-     }
-     percentageScreen = (totalBluePixels + 0.0) / (iparams_.height*iparams_.width + 0.0);
-  }
+  BlobCollection merged = blob_detector_->mergeBlobs(blobs,20,30, c_BLUE);
+  // int largestBlob = 0;
+  // if(merged.size() > 0) {
+  //   // printf("\n\nfound %i blobs\n", merged.size());
+  //   for(int i = 0; i < merged.size(); i++) {
+  //     Blob& b = merged[i];
+  //     // printf("blob %i is centered at %i, %i, in bounding box (%i,%i) to (%i,%i)\n", i, b.avgX, b.avgY, b.xi, b.yi, b.xf, b.yf);
+  //     int currSize = (b.xf-b.xi)*(b.yf-b.yi);
+  //     if(currSize > largestBlob && currSize > 100)
+  //     {
+  //       imageX = b.avgX;
+  //       imageY = b.avgY;
+  //       found = true;
+  //       largestBlob = currSize;
+  //     }
+  //   }
+  // }
+  // else
+  // {
+  //   found = false;
+  // }
+  // if(found)
+  // {
+  //   int totalBluePixels = 0;
+  //   for (int y = 0; y < iparams_.height; y++) {
+  //      for(int x = 0; x < iparams_.width; x++) {
+  //         if (getSegPixelValueAt(x,y) ==c_BLUE)
+  //         {
+  //           totalBluePixels++;
+  //         }
+  //      }
+  //    }
+  //    percentageScreen = (totalBluePixels + 0.0) / (iparams_.height*iparams_.width + 0.0);
+  // }
   
   // int sectionWidth = 9;
   // int sectionHeight = 3;

@@ -17,11 +17,36 @@ class BlobDetector : public ObjectDetector {
  public:
   BlobDetector(DETECTOR_DECLARE_ARGS, Classifier*& classifier);
   void init(TextLogger* tl){textlogger = tl;};
+
+  void constructRuns();
+  void formBlobs(Color i);
+  BlobCollection mergeBlobs(BlobCollection& bc, int wThresh, int hThresh, Color colorToMerge);
+  BlobCollection mergeBlobsHelper(BlobCollection& bc, int wThresh, int hThresh, Color colorToMerge);
+
   std::vector<BlobCollection> horizontalBlob, verticalBlob;
+
+	  class BlobNode
+	  {
+	  public:
+	  	BlobNode* parent;
+	  	std::vector<BlobNode*> children;
+	  	int start;
+	  	int end;
+	  	int origin;
+	  	//int color;
+	  };
+   
+   std::vector< std::vector< std::vector<BlobNode*> > > hBlobs;
+   std::vector< std::vector< std::vector<BlobNode*> > > vBlobs;
+   //std::vector<BlobNode*> hBlobs[NUM_COLORS][iparams_.height];
+   BlobNode * getTopParent(BlobNode* child);
+
 
  private:
   Classifier*& classifier_;
   TextLogger* textlogger;
+
 };
+
 
 #endif

@@ -20,7 +20,7 @@ LineDetector::LineDetector(DETECTOR_DECLARE_ARGS, Classifier*& classifier, BlobD
 
 
 void LineDetector::detectLine(bool topCamera) {
-  if(topCamera){ return; }
+  /*if(topCamera){ return; }
   int imageX, imageY;
   bool foundLine = false;
   findLine(imageX, imageY, foundLine); // function defined elsewhere that fills in imageX, imageY by reference
@@ -37,12 +37,12 @@ void LineDetector::detectLine(bool topCamera) {
   }
 
   line->fromTopCamera = topCamera;
-  line->seen = foundLine;
+  line->seen = foundLine;*/
 }
 
 
 void LineDetector::findLine(int& imageX, int& imageY , bool& found) {
-  int lowestWhite = 0;
+  /*int lowestWhite = 0;
   imageX = 0;
   imageY = 0;
   int allowedBlank = 5;
@@ -108,5 +108,5 @@ void LineDetector::findLine(int& imageX, int& imageY , bool& found) {
     }
     //printf("AVG: %d  >  %f\n       and totalBlankMiddle = %d \n", middleAverage, iparams_.height*.8, totalBlankMiddle);
     found = (middleAverage+0.0) > iparams_.height*.8;
-    // printf("%d > %f\n", lowestWhite, iparams_.height*.8);
+    // printf("%d > %f\n", lowestWhite, iparams_.height*.8);*/
 }

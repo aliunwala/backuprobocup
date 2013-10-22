@@ -68,12 +68,12 @@ void VisionWindow::updateBigImage() {
   if (currentBigImageType_ == SEG_IMAGE){
     drawSegmentedImage(bigImage);
     if (overlayCheck->isChecked()) {
-      drawLines(bigImage);
-      drawYellowGoal(bigImage);
-      drawBall(bigImage);
-      drawBallCands(bigImage);
-      drawDetectedRobots(bigImage);
-      drawPenaltyCross(bigImage);
+      // drawLines(bigImage);
+      // drawYellowGoal(bigImage);
+      // drawBall(bigImage);
+      // drawBallCands(bigImage);
+      // drawDetectedRobots(bigImage);
+      // drawPenaltyCross(bigImage);
       drawBeacons(bigImage);
     }
   }
@@ -90,10 +90,10 @@ void VisionWindow::redrawImages(ImageWidget* rawImage, ImageWidget* segImage, Im
   drawSmallSegmentedImage(segImage);
 
   objImage->fill(0);
-  drawLines(objImage);
-  drawYellowGoal(objImage);
-  drawBall(objImage);
-  drawDetectedRobots(objImage);
+  // drawLines(objImage);
+  // drawYellowGoal(objImage);
+  // drawBall(objImage);
+  // drawDetectedRobots(objImage);
   drawBeacons(objImage);
 
   if(horizonCheck->isChecked()) {
@@ -105,28 +105,28 @@ void VisionWindow::redrawImages(ImageWidget* rawImage, ImageWidget* segImage, Im
 
   // if overlay is on, then draw objects on the raw and seg image as well
   if (overlayCheck->isChecked()) {
-    drawLines(rawImage);
-    drawYellowGoal(rawImage);
-    drawBall(rawImage);
-    drawBallCands(rawImage);
-    drawDetectedRobots(rawImage);
-    drawPenaltyCross(rawImage);
+    // drawLines(rawImage);
+    // drawYellowGoal(rawImage);
+    // drawBall(rawImage);
+    // drawBallCands(rawImage);
+    // drawDetectedRobots(rawImage);
+    // drawPenaltyCross(rawImage);
     drawBeacons(rawImage);
 
-    drawLines(segImage);
-    drawYellowGoal(segImage);
-    drawBall(segImage);
-    drawBallCands(segImage);
-    drawDetectedRobots(segImage);
-    drawPenaltyCross(segImage);
+    // drawLines(segImage);
+    // drawYellowGoal(segImage);
+    // drawBall(segImage);
+    // drawBallCands(segImage);
+    // drawDetectedRobots(segImage);
+    // drawPenaltyCross(segImage);
     drawBeacons(segImage);
   }
 
   horizontalBlobImage->fill(0);
-  drawVertLinePoints(horizontalBlobImage);
+  // drawVertLinePoints(horizontalBlobImage);
 
   verticalBlobImage->fill(0);
-  drawHorzLinePoints(verticalBlobImage);
+  // drawHorzLinePoints(verticalBlobImage);
   drawBall(verticalBlobImage);
   drawBallCands(verticalBlobImage);
 
@@ -338,6 +338,7 @@ void VisionWindow::drawLines(ImageWidget *image) {
 }
 
 void VisionWindow::drawYellowGoal (ImageWidget *image) {
+  
   if(IS_RUNNING_CORE) {
     ImageProcessor* processor = getImageProcessor(image);
     QPainter painter(image->getImage());

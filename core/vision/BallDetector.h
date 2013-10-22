@@ -20,7 +20,7 @@ class BallDetector : public ObjectDetector {
   float lastY1;
   float lastX2;
   float lastY2;
-  void findBall(int& imageX, int& imageY ,int& isBallGoal, bool& found);
+  void findBall(int& imageX, int& imageY, int& imageW, int& imageH, int& isBallGoal, bool& found);
   void detectBall(bool topCamera);
 
  private:

@@ -8,8 +8,8 @@ ImageParams::ImageParams(Camera::Type camera) {
     width = 320;
     height = 240;
   }
-  defaultHorizontalStepScale = 0;
-  defaultVerticalStepScale = 0;
+  defaultHorizontalStepScale = 2;
+  defaultVerticalStepScale = 2;
 
   size = width * height;
   rawSize = size * 2;

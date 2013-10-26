@@ -209,3 +209,7 @@ float CameraMatrix::getWorldHeight(Coordinates top, Coordinates bottom) const {
   float height = pointTop[2] - pointBottom[2];
   return height;
 }
+
+/*float CameraMatrix::getBeaconDistanceByHeight(f) const {
+  return getWorldDistanceByHeight( , 200mm);
+}*/

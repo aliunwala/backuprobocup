@@ -41,9 +41,11 @@ void GoalDetector::detectGoal(bool topCamera) {
 
 void GoalDetector::findGoal(int& imageX, int& imageY, float& percentageScreen, bool& found) {
 
-  blob_detector_->formBlobs(c_BLUE);
+  /*blob_detector_->formBlobs(c_BLUE);
   BlobCollection& blobs = blob_detector_->horizontalBlob[c_BLUE];
-  BlobCollection merged = blob_detector_->mergeBlobs(blobs,20,30, c_BLUE);
+   BlobCollection merged = blob_detector_->mergeBlobs(blobs,20,30, c_BLUE);
+  */
+   
   // int largestBlob = 0;
   // if(merged.size() > 0) {
   //   // printf("\n\nfound %i blobs\n", merged.size());

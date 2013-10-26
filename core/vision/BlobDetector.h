@@ -18,35 +18,44 @@ class BlobDetector : public ObjectDetector {
   BlobDetector(DETECTOR_DECLARE_ARGS, Classifier*& classifier);
   void init(TextLogger* tl){textlogger = tl;};
 
-  void constructRuns();
-  void formBlobs(Color i);
-  BlobCollection mergeBlobs(BlobCollection& bc, int wThresh, int hThresh, Color colorToMerge);
-  BlobCollection mergeBlobsHelper(BlobCollection& bc, int wThresh, int hThresh, Color colorToMerge);
-
   std::vector<BlobCollection> horizontalBlob, verticalBlob;
 
-	  class BlobNode
-	  {
-	  public:
-	  	BlobNode* parent;
-	  	std::vector<BlobNode*> children;
-	  	int start;
-	  	int end;
-	  	int origin;
-	  	//int color;
-	  };
-   
-   std::vector< std::vector< std::vector<BlobNode*> > > hBlobs;
-   std::vector< std::vector< std::vector<BlobNode*> > > vBlobs;
-   //std::vector<BlobNode*> hBlobs[NUM_COLORS][iparams_.height];
-   BlobNode * getTopParent(BlobNode* child);
+  void calculateHorizontalBlobData(unsigned char);
+  void calculateVerticalBlobData(unsigned char);
+  void verticalBlobSort(unsigned char);
+  void horizontalBlobSort(unsigned char);
+
+  void clearPointBlobReferences(Color color);
+  void formWhiteLineBlobs();
+  void formBlueBandBlobs();
+  void formPinkBandBlobs();
+  void formBlobs(Color color);
+  void formBlobs(BlobCollection& blobs, Color color);
+  void formOrangeBlobs();
+  void formYellowBlobs();
+  void resetOrangeBlobs();
+  void resetYellowBlobs();
+  void calculateBlobData(Color color);
+  void calculateBlobData(BlobCollection& blobs, Color color);
+  void calculateOrangeBlobData();
+  void calculateBandBlobData(Color color);
+
+  uint16_t mergeHorizontalBlobs(Color color, uint16_t* mergeIndex, int mergeCount);
+  uint16_t mergeVerticalBlobs(Color color, uint16_t* mergeIndex, int mergeCount);
+  uint16_t mergeBlobs(BlobCollection& blobs, uint16_t* mergeIndex, int mergeCount, int thresholdX = 30, int thresholdY = 30);
+  uint16_t mergeBlobs(Color color, std::vector<BlobCollection>& blobs, uint16_t* mergeIndex, int mergeCount);
+  BlobCollection mergeBlobs(BlobCollection& blobs, int thresholdX, int thresholdY);
 
 
  private:
+  void formBlobsWithVertLineSegs(unsigned char*,int);
+  void formBlobsWithHorzLineSegs(unsigned char*,int);
+  void setImagePointers();
+
   Classifier*& classifier_;
+  VisionPoint ***verticalPoint, ***horizontalPoint;
+  uint32_t **verticalPointCount, **horizontalPointCount;
   TextLogger* textlogger;
-
 };
-
 
 #endif

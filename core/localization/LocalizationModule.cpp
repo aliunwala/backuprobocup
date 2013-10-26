@@ -42,11 +42,67 @@ void LocalizationModule::initSpecificModule(){
 
 void LocalizationModule::processFrame() {
   int frameID = frameInfo->frame_id;
+  printf("%d\n", NUM_PARTICLES );
+  // initSpecificModule();
+  // printf("%d\n", NUM_PARTICLES );
+
   // 1. Update particles from observations
+    // Circle based weighting
+  
   // 2. If this is a resampling frame, resample
+    // Some points are not the same weight redisribute the points based on weight
+    // weights should all be the same/low
+    
+    //Sum all weights
+
+    float sum = 0;
+    for(int i = 0 ; i < NUM_PARTICLES ;  i ++ ){
+      sum += particles_[i].prob; 
+    }  
+
+    std::vector<Point2D> listofpoints;
+    std::vector<float> listofprob; // Corresponding indexes for the point
+    for(int i = 0 ; i < NUM_PARTICLES ;  i++ ){
+      for(int j = 0 ; j < listofpoints.size() ;  j++ ){
+        if(!(  listofpoints[j].x == particles_[i].loc.x   // if not seen before
+          && listofpoints[j].y == particles_[i].loc.y)){
+          //Add point2d to listofpoints
+          listofpoints.push_back( particles_[i].loc);
+          listofprob.push_back(particles_[i].prob);
+        }
+        else if (  listofpoints[j].x == particles_[i].loc.x 
+                && listofpoints[j].y == particles_[i].loc.y) { // if seen before
+          listofprob[j] += particles_[i].prob;
+        }
+      }
+    }
+
+    for (int i  = 0 ; i < listofprob.size(); i++ ){
+      listofprob[i] += listofprob[i]/sum;
+      listofprob[i] = NUM_PARTICLES * listofprob[i];  // May work... # of vectors to have at that point for next iteration
+    }
+    //TODO START HERE NEXT TIME
+
+
   // 3. Update the robot's pose
+    // Iterate overall the points and find the average x,y by mass
+      // This may be an bad idea if you have two large points of mass... Two circles intersecting 
+  
+  double sumx = 0;
+  double sumy = 0;
+  for (int i = 0;  i < NUM_PARTICLES ; i++){
+    sumx += particles_[i].loc.x;
+    sumy += particles_[i].loc.y;
+  }
+  double newx = sumx/NUM_PARTICLES;
+  double newy = sumy/NUM_PARTICLES;
+
   // 4. If this is a random walk frame, random walk
+    // Initally all particles are unifromly distributed
+    // Spread each of the particles out based on the random methods provided
+
   // 5. Copy particles to localization memory:
+
   copyParticles();
 }
 

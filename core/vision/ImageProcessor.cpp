@@ -100,12 +100,21 @@ void ImageProcessor::setCalibration(RobotCalibration calibration){
 void ImageProcessor::processFrame(){
   updateTransform();
   classifier_->classifyImage(color_table_);
-  //classifier_->constructRuns();
-  blob_detector_->constructRuns();
+  classifier_->constructRuns();
+  
   //blob_detector_->formBlobs(3);
   /* ... */
-
+  // for (int i=0; i<iparams_.height;  i++){
+  //   for (int j=0; j<iparams_.width;j++){
+  //     printf("%d", getSegPixelValueAt(i, j));
+  //   }
+  //   printf("\n");
+  // }
+  // printf("\n\n");
   // blob_detector_->formBlobs(c_PINK);
+  // BlobCollection& pinkBlobs = blob_detector_->horizontalBlob[c_PINK];
+  // printf("pinkBlobs %d\n", pinkBlobs.size() );
+
   // blob_detector_->formBlobs(c_YELLOW);
   // blob_detector_->formBlobs(c_BLUE);
 
@@ -117,7 +126,7 @@ void ImageProcessor::processFrame(){
   }
   else if(camera_ == Camera::BOTTOM)
   {
-    beacon_detector_->detectBeacon(false);
+    // beacon_detector_->detectBeacon(false);
     // ball_detector_->detectBall(false);
     // goal_detector_->detectGoal(false);
     // line_detector_->detectLine(false);

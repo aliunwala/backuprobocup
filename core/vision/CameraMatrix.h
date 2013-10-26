@@ -67,6 +67,10 @@ class CameraMatrix {
     float getWorldDistanceByWidth(float cameraWidth, float worldWidth) const;
     float getWorldDistanceByHeight(float cameraHeight, float worldHeight) const;
     float getWorldHeight(Coordinates top, Coordinates bottom) const;
+    
+    float getGeneHeight() const {
+        return cameraPosition_[2];
+    }
 
     void setCalibration(const RobotCalibration& cal);
 };

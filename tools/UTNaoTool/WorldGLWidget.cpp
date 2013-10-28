@@ -680,7 +680,7 @@ void WorldGLWidget::drawRobot(){
   }
 
   WorldObject* self = &(worldObjects->objects_[robotState->WO_SELF]);
-  basicGL.colorRGBAlpha(basicGL.whiteRGB,1.0);
+  basicGL.colorRGBAlpha(basicGL.whiteRGB,0.3);
   //robotGL.drawKinematicsRobotWithBasicFeet(self,bodyModel->abs_parts_);
   // TODO: stick figure
   float tilt = 0;

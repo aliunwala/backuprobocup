@@ -217,8 +217,8 @@ public:
   //AngRad sdBearing;
 
   Vector2D relVel;
-  
-  //Vector2D sdRelVel;
+ 
+   //Vector2D sdRelVel;
 
   // These are the global position after localization (including confidence)
   // or permanent locations for landmarks and unmovable objects

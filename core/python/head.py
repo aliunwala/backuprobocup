@@ -51,7 +51,7 @@ class Scan(Task):
 
 class DiscreteScan(Task):
   stepTime = 0.4
-  def __init__(self, dest = 115 * core.DEG_T_RAD, stepSize = 26 * core.DEG_T_RAD, skipFirstPause = False):
+  def __init__(self, dest = 80 * core.DEG_T_RAD, stepSize = 26 * core.DEG_T_RAD, skipFirstPause = False):
     Task.__init__(self)
     self.dest = dest
     self.stepSize = stepSize

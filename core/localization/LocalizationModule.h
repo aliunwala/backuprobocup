@@ -7,7 +7,7 @@
 #include <memory/TeamPacketsBlock.h>
 #include <memory/FrameInfoBlock.h>
 #include <memory/OdometryBlock.h>
-#include <memory/RobotStateBlock.h>
+#include <memory/RobotStateBlock.h> 
 #include <memory/GameStateBlock.h>
 #include <memory/JointBlock.h>
 #include <memory/BehaviorBlock.h>
@@ -27,6 +27,7 @@ class LocalizationModule: public Module  {
   void specifyMemoryBlocks();
   void initSpecificModule();
   void processFrame();
+
  private:
   void updatePose();
   void updateParticlesFromOdometry();
@@ -34,6 +35,12 @@ class LocalizationModule: public Module  {
   void setParticleProbabilities(float newProb);
   void randomWalkParticles();
   void copyParticles();
+  void resample();
+  int sampleRate;
+  int sampleMod;
+  double globalSumX;
+  double globalSumY;
+  AngRad globalTheta;
   Particle particles_[NUM_PARTICLES];
   WorldObjectBlock* worldObjects;
   LocalizationBlock* localizationMem;

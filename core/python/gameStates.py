@@ -2,7 +2,7 @@
 
 import core
 from task import Task, HeadBodyTask, MachineTask
-import pose, head, kicks
+import pose, head, kicks, state
 import math
 import commands, cfgstiff
 import testFSM
@@ -43,186 +43,139 @@ Penalised = Initial = Finished = pose.Sit
 #   B = matrix([[1,2,3],[1,2,3]])
 #   C = matrix([[1,2,3],[1,2,3]])
 
-class Ready(Task):
-  # def __init__(self):
-  #   HeadBodyTask.__init__(self,
-  #     head.Scan(period = 3.0, maxPan = 105.0 * core.DEG_T_RAD, numSweeps = 4),
-  #     pose.Stand()
-  #   )
-
-  # def run(self):
-  #   commands.setStiffness()
-  #   HeadBodyTask.run(self)
-  sampleSum = 0
-  errorSamples = []
-  rotateCounter = 0
-  kickStart = -1
-  seenPercentage = True
-  percInARow = 0
-
+class Ready(HeadBodyTask):
+  def __init__(self):
+    HeadBodyTask.__init__(self,
+      head.Scan(period = 3.0, maxPan = 105.0 * core.DEG_T_RAD, numSweeps = 4),
+      pose.Stand()
+    )
 
   def run(self):
-    ball = core.world_objects.getObjPtr(core.WO_BALL)
-    goal = core.world_objects.getObjPtr(core.WO_OPP_GOAL)
-    goalline = core.world_objects.getObjPtr(core.WO_OPP_GOAL_LINE)
-    imageWidth = 320.0
-    imageHeight = 240.0
-    xc = imageWidth/2
-    ballLinedUpForKick = ball.imageCenterX>= (imageWidth*.35) and ball.imageCenterX<= (imageWidth*.65) and not (ball.imageCenterX<= (imageWidth*.55) and ball.imageCenterX>= (imageWidth*.45))
-    ballLinedUpForDribble = ball.imageCenterX<= (imageWidth*.65) and ball.imageCenterX>= (imageWidth*.35) and ball.imageCenterY >(imageHeight*.8)
-    canKick  = ball.seen and ball.imageCenterY >(imageHeight*.6) and ballLinedUpForKick
-    
-    #print("PERCINAROW: " + str(self.percInARow) + "\n")
-    if not self.seenPercentage and goal.seen and goal.radius >= 0.10:
-      self.percInARow+= 1
-      if(self.percInARow >= 4):
-        self.seenPercentage = True
-    elif not self.seenPercentage:
-      self.percInARow = 0
+    commands.setStiffness()
+    HeadBodyTask.run(self)
 
+
+
+
+
+
+
+
+class Playing(Task):
+  orientationSamples = []
+
+  def __init__(self, maxPan = 2.0, period = 3.0, numSweeps = 1, direction = 1):
+    Task.__init__(self)
+    self.maxPan = maxPan
+    self.period = period
+    self.numSweeps = numSweeps
+    self.direction = direction
+    self.intDirection = direction
+    self.sweepCounter = 0
+    self.state = state.SimpleStateMachine(['firstScan', 'nextScans'])
+    self.walkEnd = 0.0
+    self.safeOrientation = 0.0
+    self.safeX = 0.0
+    self.safeY = 0.0
+
+  def run(self):
+    woself = core.world_objects.getObjPtr(core.robot_state.WO_SELF)
     if inDuration(0.0, 2.0, self): ##START UP
       commands.setStiffness()
       commands.stand()
       commands.setHeadTilt(-21)
-    elif inDuration(self.kickStart, self.kickStart+2.0, self): ##START KICK
-      if canKick:
-        core.speech.say('KICK')
+      # print('X(' +  str(woself.loc.x) + ') Y(' + str(woself.loc.y) + ') ORIENT(' + str(woself.orientation) + ')\n' )
+    elif inDuration(0.0, self.walkEnd, self):
+      commands.setHeadPan(0.0, 1.0, False)
+      # print('IN DURATION ' + str(self.walkEnd) + ' < ' + str(self.getTime()) + '\n')
+      # actualDegrees = (woself.orientation * 180.0) / math.pi
+      # print('X(' +  str(woself.loc.x) + ') Y(' + str(woself.loc.y) + ') ORIENT(' + str(woself.orientation) + ') DEGREES(' + str(actualDegrees) + ')\n' )
+      # commands.setWalkVelocity(0.3, 0.0, 0.0)
+
+      
+      centAngle = math.atan(math.fabs(woself.loc.x)/math.fabs(woself.loc.y))
+      print('CENT BEFORE: ' + str(centAngle * (180/math.pi)))
+      if(woself.loc.x >= 0 and woself.loc.y >= 0):
+        centAngle = -(centAngle + (math.pi/2.0))
+      elif(woself.loc.x < 0 and woself.loc.y >= 0):
+        centAngle = -centAngle
+      elif(woself.loc.x > 0 and woself.loc.y < 0):
+        centAngle = centAngle + (math.pi/2.0)
       else:
-        self.kickStart = -1
-    elif inDuration(self.kickStart+2.0, self.kickStart+3.0, self): ##KICK NOW
-      core.speech.say('NOW')
-      kreq = core.kick_request
-      kreq.ball_seen_ = ball.seen
-      kreq.ball_image_center_x_ = ball.imageCenterX
-      kreq.ball_image_center_y_ = ball.imageCenterY
-      kreq.kick_running_ = True
-      kickFoot = core.Kick.RIGHT
-      if( ball.imageCenterX < xc):
-        kickFoot = core.Kick.LEFT
-      kreq.set(core.Kick.STRAIGHT, kickFoot, 0, 2000)
-    elif inDuration(self.kickStart+3.0, self.kickStart+5.0, self): ##END KICK
-      kreq = core.kick_request
-      kreq.kick_running = False
-
-    ############################### MAIN FUNCTIONALITY
-    else:
-      if not goalline.seen:
-        if ball.seen:#BALL HAS BEEN SEEN
-          extremeAngle = math.pi
-          angleError = -((ball.imageCenterX * ((extremeAngle*2.0)/imageWidth)) - extremeAngle)
-
-          lastError = 0.0
-          timeStep = 90
-          if len(self.errorSamples)+1 > timeStep :
-            lastError = self.errorSamples[timeStep-1]
-          elif len(self.errorSamples)>0 :
-            lastError = self.errorSamples[len(self.errorSamples)-1]
-
-          #Calculate pidAngle
-          pidP = angleError
-          pidI = self.sampleSum
-          pidD = (angleError - lastError)/timeStep
-
-          kP = 0.5
-          kI = 0.0
-          kD = 0.0
-
-          pidAngle = kP*pidP + kI*pidI + kD*pidD
-          if pidAngle > extremeAngle:
-            pidAngle = extremeAngle;
-          elif pidAngle < -extremeAngle:
-            pidAngle = -extremeAngle;
-
-          #print('P=' + str(pidP) + '  I=' + str(pidI) + '  D=' + str(pidD) + '  newAngle=' + str(pidAngle))
-
-          maxSamples = 1000
-          self.errorSamples.append(angleError)
-          self.sampleSum += angleError
-          if len(self.errorSamples)+1 == maxSamples :
-            self.sampleSum -= self.errorSamples.pop()
-
-          #set the walkspeed############################################################
-          walkSpeed = 0.3
-          if not ball.fromTopCamera:
-            #ball is in bottom camera
-            walkSpeed = 0.1
+        centAngle = centAngle
 
 
-          ##IS THE BALL CLOSE?
-          if not ball.fromTopCamera: ##BALL IS CLOSE
-            ##IS THE GOAL SEEN?
-            if goal.seen: ##GOAL IS SEEN
-              ##IS THE GOAL ALIGNED WITH THE BALL
-              goalThresh = 30
-              centerThresh = 40
-              if ((xc-centerThresh) <= ball.imageCenterX and (xc+centerThresh) >= ball.imageCenterX and (goal.imageCenterX-goalThresh) <= ball.imageCenterX and (goal.imageCenterX+goalThresh) >= ball.imageCenterX): ##GOAL IS ALIGNED
-                if not self.seenPercentage: ##BALL IS FAR FROM GOAL
-                  if ballLinedUpForDribble:
-                    core.speech.say('DRIBBLE')
-                    commands.setWalkVelocity(0.7, 0.0, 0.0)
-                  else:
-                    commands.setWalkVelocity(-0.1, 0.0, 0.0)
-                  pass
-                else: ##BALL IS CLOSE ENOUGH TO GOAL TO KICK
-                  if ball.imageCenterY >(imageHeight*.8) and ballLinedUpForKick:
-                    commands.stand()
-                    self.kickStart = self.getTime()
-                  elif not ballLinedUpForKick and ball.imageCenterY > (imageHeight*.8): ##BALL ISN'T ON GOOD FEET
-                    ##SIDE STEP TO SET UP BALL
-                    commands.setWalkVelocity(-0.1, 0.0, 0.0)
+      # print(' CENT ANGLE: ' + str(centAngle*(180.0/math.pi)) + ' TO THETA ' + str(woself.orientation*(180.0/math.pi)) + '\n')
+      # angleDiff = centAngle-self.safeOrientation
+      angleDiff = centAngle - woself.orientation#self.safeOrientation
+      if(angleDiff > math.pi): 
+        angleDiff -= 2.0*math.pi
+      elif(angleDiff < -math.pi):
+        angleDiff += 2.0*math.pi
 
-                  else: ##BALL ISN'T CLOSE TO FEET
-                    ##WALK CLOSE TO BALL
-                    core.speech.say('WALK')
-                    commands.setWalkVelocity(0.1, 0.0, 0.0)
-
-              else: ##GOAL IS NOT ALIGNED
-                sideStepDir = ball.imageCenterX - goal.imageCenterX
-                sideStepSpeed = 0.0
-                if (sideStepDir > 0):
-                  sideStepSpeed = -0.4
-                else:
-                  sideStepSpeed = 0.4
-                core.speech.say('ALIGN')
-                commands.setWalkVelocity(0.0, sideStepSpeed, pidAngle)
-            else: ##GOAL IS NOT SEEN
-              #rotate around the ball until goal is visible
-              core.speech.say('ROTATE')
-              commands.setWalkVelocity(0.0, 1.0, -0.2)
-
-          else: ##BALL IS FAR
-            commands.setWalkVelocity(walkSpeed, 0.0, pidAngle)
-
-
-
-        else:#BALL HAS NOT BEEN SEEN
-          core.speech.say('SEARCH')
-          commands.setWalkVelocity(0.0, 0.0, 0.2)
-          self.sampleSum = 0
-          self.errorSamples = []
+      walkVelocity = 0.2
+      turnVelocity = 0.0
+      # print('FABS ' + str(math.fabs(angleDiff-math.pi))  + '   ' + str(math.fabs(angleDiff+math.pi)) + '\n')
+      # if(math.fabs(angleDiff-math.pi) < math.pi/8 or math.fabs(angleDiff+math.pi) < math.pi/8):
+      #   turnVelocity = 0.0
+      #   walkVelocity = -0.5
+      if(angleDiff < math.pi/8 and angleDiff > -math.pi/8):
+        turnVelocity = 0.0
+      elif(angleDiff > 0):
+        turnVelocity = -0.2
       else:
-        core.speech.say('WHITE')
-        #print('WHITE\n')
+        turnVelocity = 0.2
+
+      if( woself.loc.x < 100 and woself.loc.x > -100 and woself.loc.y < 100 and woself.loc.y > -100):
         commands.stand()
+      else:
+        commands.setWalkVelocity(walkVelocity, 0.0, turnVelocity)
 
+      
 
-class Playing(Task):
-  searchDirection = 1.0
-
-
-  def run(self):
-
-    if inDuration(0.0, -1.0, self): ##START UP
-      commands.setStiffness()
-      commands.stand()
-      commands.setHeadTilt(-21)
     else:
-      commands.setWalkVelocity(0.3, 0.0, 0.0)
-      if(percepts.joint_angles[core.HeadPan] > 0.6 and self.searchDirection==1.0):
-        self.searchDirection = -1.0
-      elif(percepts.joint_angles[core.HeadPan] < -0.6 and self.searchDirection==-1.0):
-        self.searchDirection = 1.0
-      commands.setHeadPan((math.pi/4.0)*self.searchDirection, 3.0)
+      commands.stand()
+      numSteps = self.period / head.DiscreteScan.stepTime + 1
+      stepSize = (2 * self.maxPan / numSteps) * 1.05
+
+      st = self.state
+
+      self.orientationSamples.append(woself.orientation)
+      if len(self.orientationSamples)+1 >= 30:
+        self.orientationSamples.pop()
+
+      if self.sweepCounter > self.numSweeps: 
+        self.walkEnd = self.getTime() + 6.0
+        self.sweepCounter = 0
+
+        self.safeOrientation = 0
+        for i in self.orientationSamples:
+          self.safeOrientation += i
+
+        self.safeOrientation = self.safeOrientation / len(self.orientationSamples)
+
+        self.orientationSamples = []
+        self.safeX = woself.loc.x
+        self.safeY = woself.loc.y
+        return
+
+      if st.inState(st.firstScan):
+        self.intDirection = self.direction
+        self.subtask = head.DiscreteScan(dest = self.direction * self.maxPan, stepSize = stepSize)
+        st.transition(st.nextScans)
+        return
+
+      if st.inState(st.nextScans) and self.subtask.finished():
+        self.sweepCounter += 1
+        self.intDirection *= -1
+        core.behavior_mem.completeBallSearchTime = core.vision_frame_info.seconds_since_start
+        self.subtask = head.DiscreteScan(dest = self.intDirection * self.maxPan, stepSize = stepSize, skipFirstPause = True)
+        return
+
+      
+
+
+
 
 
 class Testing(Task):
@@ -232,97 +185,4 @@ class Testing(Task):
 
   def run(self):
     ball = core.world_objects.getObjPtr(core.WO_BALL)
-    goal = core.world_objects.getObjPtr(core.WO_OPP_GOAL)
-    goalline = core.world_objects.getObjPtr(core.WO_OPP_GOAL_LINE)
-    imageWidth = 320.0
-    imageHeight = 240.0
-    xc = imageWidth/2
-    if inDuration(0.0, 2.0, self):
-      commands.setStiffness()
-      commands.stand()
-      commands.setHeadTilt(-21)
-    #####START GOALIE WALKING AND STOPPING AT WHITE LINE########
-    # elif inDuration(2.0, -1.0, self):
-    #   if goalline.seen:
-    #     core.speech.say('WHITE')
-    #     commands.stand()
-    #   else:
-    #     commands.setWalkVelocity(0.1, 0.0, 0.0)
-    #####END GOALIE WALKING AND STOPPING AT WHITE LINE##########
-    elif inDuration(self.blockStart, self.blockStart+10, self):
-      self.task.processFrame()
-      #print("PROCESS\n")
-      if self.task.finished():
-        self._complete = True
-        commands.stand()
-        #print("FINISHED\n")
-        self.blockStart = -10000
-    # elif inDuration(self.blockStart+5.0, self.blockStart+8.0, self):
-    #   commands.stand()
-    elif inDuration(2.0, -1.0, self):
-      #print("NORMAL\n")
-      if(ball.seen):
-        
-        #commands.setHeadPan(0.0, 1.0, True)
-        if(ball.width>0 and ball.fromTopCamera):
-          self.searchDirection = 1
-        elif ball.fromTopCamera:
-          self.searchDirection = -1
-        # print("BALL X: " + str(ball.width) + "   BALL Y: " + str(ball.height) + "\n")
-
-        if(ball.width >= 50.0 and ball.width<= 650.0 and ball.height <= 75.0):
-          core.speech.say('LEFT')
-          # commands.setWalkVelocity(0.0, -5.0, 0.0)
-          self.blockStart = self.getTime()
-          if(ball.fieldLineIndex == 1):
-            self.task = pose.BlockLeft()
-          else:
-            self.task = pose.Squat()
-        elif(ball.width <= -50.0 and ball.width >=-650.0  and ball.height <= 75.0):
-          core.speech.say('RIGHT')
-          # commands.setWalkVelocity(0.0, 5.0, 0.0)
-          self.blockStart = self.getTime()
-          if(ball.fieldLineIndex==1):
-            self.task = pose.BlockRight()
-          else:
-            self.task = pose.Squat()
-        else:
-          rotateX = ball.imageCenterX -xc
-          extremeAngle = math.pi/4.0
-          moveX = -((ball.imageCenterX * ((extremeAngle*2.0)/imageWidth)) - extremeAngle)
-          
-          if(math.fabs(moveX) > math.fabs(percepts.joint_angles[core.HeadPan]) and math.fabs(percepts.joint_angles[core.HeadPan]) > 0.4) or (rotateX <= 25 and rotateX >= -25):
-            commands.setHeadPan(0, 2.0, True)
-            #ASHER WALKING CODE DISABLED CURRENTLY
-            # if(percepts.joint_angles[core.HeadPan] > 0.0):
-            #   print("WALK RIGHT\n")
-            #   commands.setWalkVelocity(0.0, 0.2, 0.0)
-            # elif(percepts.joint_angles[core.HeadPan] < -0.0):
-            #   print("WALK LEFT\n")
-            #   commands.setWalkVelocity(0.0, -0.2, 0.0)
-            # else:
-            #   print("NOT TOO FAR\n")
-            #   commands.stand()
-            commands.stand()
-          elif (rotateX > 25 or rotateX < -25):
-            #print(str(percepts.joint_angles[core.HeadPan]) + " MOVEX: " + str(moveX) + "\n")
-            commands.stand()
-            commands.setHeadPan(moveX, 2.0)
-            #commands.setWalkVelocity(0.0, 0.0, -0.1)
-            
-        #core.speech.say('YES')
-        #print('BALL CENTER:' + str(ball.imageCenterX) + ', ' + str(ball.imageCenterY) + '\n')
-      else:
-        core.speech.say('SEARCH')
-        commands.stand()
-        if(self.searchDirection != 0):  
-          if(percepts.joint_angles[core.HeadPan] > 0.6 and self.searchDirection==1.0):
-            self.searchDirection = -1.0
-          elif(percepts.joint_angles[core.HeadPan] < -0.6 and self.searchDirection==-1.0):
-            self.searchDirection = 1.0
-          commands.setHeadPan((math.pi/4.0)*self.searchDirection, 1.0)
-          #print(str(math.fabs(percepts.joint_angles[core.HeadPan])) + "\n")
-          #commands.setWalkVelocity(0.0, 0.0, 0.3 * self.searchDirection)
-        else:
-          pass
-          #commands.setWalkVelocity(0.0, 0.0, 0.2 * self.searchDirection)
+    
